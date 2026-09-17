@@ -34,8 +34,20 @@
       min-height: 300px;
     }
 
+    .score {
+      font-size: 30px;
+      margin-bottom: 30px;
+    }
+
+    .click-button {
+      font-size: 24px;
+      padding: 20px 40px;
+      cursor: pointer;
+    }
+
     .back {
       display: inline-block;
+      margin-top: 30px;
       padding: 10px 20px;
       background-color: #333333;
       color: #ffffff;
@@ -56,7 +68,15 @@
     <h1>Game 01</h1>
 
     <div class="game-area">
-      <p>ここにゲームを作ります。</p>
+
+      <div class="score">
+        スコア：<span id="score">0</span>
+      </div>
+
+      <button class="click-button" onclick="addScore()">
+        クリック！
+      </button>
+
     </div>
 
     <a class="back" href="index.html">
@@ -64,6 +84,17 @@
     </a>
 
   </main>
+
+  <script>
+
+    let score = 0;
+
+    function addScore() {
+      score = score + 1;
+      document.getElementById("score").textContent = score;
+    }
+
+  </script>
 
 </body>
 

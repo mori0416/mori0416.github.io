@@ -3,16 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Game Site</title>
+  <title>Mori's Game Site</title>
+
+  <style>
+    .games {
+      display: flex;
+      gap: 20px;
+      max-width: 1000px;
+      margin: 50px auto;
+    }
+
+    .games img {
+      width: calc((100% - 40px) / 3);
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h1>My Game Site</h1>
+  <h1>Mori's Game Site</h1>
 
-  <h2>Games</h2>
-
-  <p>自作ゲームを公開しています。</p>
+  <div class="games">
+    <img src="game01.png" alt="Game 01">
+    <img src="game02.png" alt="Game 02">
+    <img src="game03.png" alt="Game 03">
+  </div>
 
 </body>
 </html>

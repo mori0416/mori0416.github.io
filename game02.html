@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Game 02 - Mori's Game Site</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #333333;
+      text-align: center;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .info {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .game-area {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      height: 400px;
+      margin: 0 auto 30px;
+      border: 2px solid #333333;
+      background-color: #f5f5f5;
+      overflow: hidden;
+    }
+
+    .target {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #333333;
+      cursor: pointer;
+      display: none;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 12px 30px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    #message {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #333333;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .back:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main>
+
+    <h1>Game 02</h1>
+
+    <div class="info">
+      残り時間：<span id="time">10</span>秒　
+      スコア：<span id="score">0</span>
+    </div>
+
+    <button id="startButton" onclick="startGame()">
+      スタート！
+    </button>
+
+    <div class="game-area" id="gameArea">
+
+      <div
+        class="target"
+        id="target"
+        onclick="hitTarget()">
+      </div>
+
+    </div>
+
+    <div id="message"></div>
+
+    <a class="back" href="index.html">
+      ← ゲーム一覧に戻る
+    </a>
+
+  </main>
+
+  <script>
+
+    let score = 0;
+    let time = 10;
+    let timer;
+
+    function startGame() {
+
+      score = 0;
+      time = 10;
+
+      document.getElementById("score").textContent = score;
+      document.getElementById("time").textContent = time;
+
+      document.getElementById("message").textContent = "";
+
+      document.getElementById("startButton").disabled = true;
+
+      document.getElementById("target").style.display = "block";
+
+      moveTarget();
+
+      timer = setInterval(function() {
+
+        time = time - 1;
+
+        document.getElementById("time").textContent = time;
+
+        if (time <= 0) {
+          endGame();
+        }
+
+      }, 1000);
+    }
+
+    function hitTarget() {
+
+      score = score + 1;
+
+      document.getElementById("score").textContent = score;
+
+      moveTarget();
+    }
+
+    function moveTarget() {
+
+      const gameArea = document.getElementById("gameArea");
+      const target = document.getElementById("target");
+
+      const maxX = gameArea.clientWidth - target.offsetWidth;
+      const maxY = gameArea.clientHeight - target.offsetHeight;
+
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+
+      target.style.left = x + "px";
+      target.style.top = y + "px";
+    }
+
+    function endGame() {
+
+      clearInterval(timer);
+
+      document.getElementById("target").style.display = "none";
+
+      document.getElementById("startButton").disabled = false;
+
+      document.getElementById("message").textContent =
+        "ゲーム終了！ スコアは " + score + " でした！";
+    }
+
+  </script>
+
+</body>
+
+</html>

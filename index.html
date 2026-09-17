@@ -39,15 +39,19 @@
     }
 
     .games a {
-      width: calc((100% - 40px) / 3);
+      flex: 1;
       display: block;
     }
 
     .games img {
       width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: contain;
+      height: auto;
       display: block;
+    }
+
+    /* マウスを乗せたとき少し薄くする */
+    .games a:hover img {
+      opacity: 0.8;
     }
 
     /* スマホ用 */

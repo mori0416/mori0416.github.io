@@ -1,43 +1,97 @@
+```html
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Mori's Game Site</title>
 
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #333333;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .description {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
     .games {
       display: flex;
       gap: 20px;
-      max-width: 1000px;
-      margin: 50px auto;
+    }
+
+    .games a {
+      width: calc((100% - 40px) / 3);
+      display: block;
     }
 
     .games img {
-      width: calc((100% - 40px) / 3);
+      width: 100%;
       aspect-ratio: 16 / 9;
       object-fit: contain;
+      display: block;
+    }
+
+    /* スマホ用 */
+    @media (max-width: 600px) {
+      .games {
+        flex-direction: column;
+      }
+
+      .games a {
+        width: 100%;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <h1>Mori's Game Site</h1>
+  <main>
 
-<div class="games">
-  <a href="game01.html">
-    <img src="game01.JPG" alt="Game 01">
-  </a>
+    <h1>Mori's Game Site</h1>
 
-  <a href="game02.html">
-    <img src="game02.JPG" alt="Game 02">
-  </a>
+    <p class="description">
+      自作ゲームを公開しています。
+    </p>
 
-  <a href="game03.html">
-    <img src="game03.JPG" alt="Game 03">
-  </a>
-</div>
+    <div class="games">
+
+      <a href="game01.html">
+        <img src="game01.JPG" alt="Game 01">
+      </a>
+
+      <a href="game02.html">
+        <img src="game02.JPG" alt="Game 02">
+      </a>
+
+      <a href="game03.html">
+        <img src="game03.JPG" alt="Game 03">
+      </a>
+
+    </div>
+
+  </main>
 
 </body>
+
 </html>
+```

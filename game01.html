@@ -113,11 +113,24 @@
 
   </main>
 
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
+
+    const SUPABASE_URL = "https://vyvbgeqcnrouwpmjwzph.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_CEACy8FVXvk1IVVh5QtSCA_jiNLwHTT";
+
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
 
     let score = 0;
     let time = 10;
     let timer;
+
 
     function startGame() {
 
@@ -145,12 +158,14 @@
       }, 1000);
     }
 
+
     function addScore() {
 
       score = score + 1;
 
       document.getElementById("score").textContent = score;
     }
+
 
     function endGame() {
 
@@ -159,46 +174,34 @@
       document.getElementById("clickButton").disabled = true;
       document.getElementById("startButton").disabled = false;
 
-document.getElementById("message").textContent =
-  "ゲーム終了！ スコアは " + score + " でした！";
+      document.getElementById("message").textContent =
+        "ゲーム終了！ スコアは " + score + " でした！";
 
-saveScore();
+      saveScore();
+    }
 
-async function saveScore() {
 
-  const { error } = await supabaseClient
-    .from("game01_scores")
-    .insert([
-      {
-        player_name: "Player",
-        score: score
+    async function saveScore() {
+
+      const { error } = await supabaseClient
+        .from("game01_scores")
+        .insert([
+          {
+            player_name: "Player",
+            score: score
+          }
+        ]);
+
+      if (error) {
+        console.log("スコア保存エラー:", error);
+      } else {
+        console.log("スコアを保存しました！");
       }
-    ]);
 
-  if (error) {
-    console.log("スコア保存エラー:", error);
-  } else {
-    console.log("スコアを保存しました！");
-  }
+    }
 
-}
-
-</script>
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-
-  const SUPABASE_URL = "https://vyvbgeqcnrouwpmjwzph.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_CEACy8FVXvk1IVVh5QtSCA_jiNLwHTT";
-
-  const supabaseClient = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-
-</script>
+  </script>
 
 </body>
-  
+
 </html>

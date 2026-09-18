@@ -159,12 +159,32 @@
       document.getElementById("clickButton").disabled = true;
       document.getElementById("startButton").disabled = false;
 
-      document.getElementById("message").textContent =
-        "ゲーム終了！ スコアは " + score + " でした！";
-    }
+document.getElementById("message").textContent =
+  "ゲーム終了！ スコアは " + score + " でした！";
+
+saveScore();
+
+async function saveScore() {
+
+  const { error } = await supabaseClient
+    .from("game01_scores")
+    .insert([
+      {
+        player_name: "Player",
+        score: score
+      }
+    ]);
+
+  if (error) {
+    console.log("スコア保存エラー:", error);
+  } else {
+    console.log("スコアを保存しました！");
+  }
+
+}
 
 </script>
-
+  
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>

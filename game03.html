@@ -30,8 +30,8 @@
     .description {
       font-size: 18px;
       margin-bottom: 20px;
+      line-height: 1.7;
     }
-
 
     /* ==============================
        ゲームエリア
@@ -54,15 +54,11 @@
       overflow: hidden;
     }
 
-
-    /* Matter.jsのCanvas */
-
     #gameContainer canvas {
       position: absolute;
       top: 0;
       left: 0;
     }
-
 
     /* ==============================
        次に落とすフルーツ
@@ -88,9 +84,8 @@
       pointer-events: none;
     }
 
-
     /* ==============================
-       ガイド線
+       ガイド
        ============================== */
 
     #guide {
@@ -109,7 +104,6 @@
 
       pointer-events: none;
     }
-
 
     /* ==============================
        操作
@@ -149,15 +143,11 @@
       cursor: not-allowed;
     }
 
-
     #message {
       min-height: 30px;
-
       margin-top: 15px;
-
       font-size: 20px;
     }
-
 
     .back {
       display: inline-block;
@@ -177,7 +167,6 @@
     .back:hover {
       opacity: 0.8;
     }
-
 
     /* ==============================
        スマホ
@@ -212,11 +201,10 @@
     <h1>Game 03</h1>
 
     <p class="description">
-      フルーツを落として積み上げよう！
+      同じフルーツをぶつけて合体させよう！<br>
+      🍒 → 🍓 → 🍊 → 🍎 → 🍉
     </p>
 
-
-    <!-- ゲーム画面 -->
 
     <div id="gameContainer">
 
@@ -229,42 +217,32 @@
     </div>
 
 
-    <!-- 操作 -->
-
     <div class="controls">
 
       <button
         class="control-button"
         onclick="moveLeft()">
-
         ←
-
       </button>
-
 
       <button
         class="control-button"
         id="dropButton"
         onclick="dropFruit()">
-
         落とす！
-
       </button>
-
 
       <button
         class="control-button"
         onclick="moveRight()">
-
         →
-
       </button>
 
     </div>
 
 
     <div id="message">
-      左右に動かして落としてみよう！
+      🍒を2個ぶつけてみよう！
     </div>
 
 
@@ -275,10 +253,7 @@
   </main>
 
 
-
-  <!-- ==============================
-       Matter.js
-       ============================== -->
+  <!-- Matter.js -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js">
@@ -291,21 +266,12 @@
     // Matter.js
     // ========================================
 
-    const Engine =
-      Matter.Engine;
-
-    const Render =
-      Matter.Render;
-
-    const Runner =
-      Matter.Runner;
-
-    const Bodies =
-      Matter.Bodies;
-
-    const Composite =
-      Matter.Composite;
-
+    const Engine = Matter.Engine;
+    const Render = Matter.Render;
+    const Runner = Matter.Runner;
+    const Bodies = Matter.Bodies;
+    const Composite = Matter.Composite;
+    const Events = Matter.Events;
 
 
     // ========================================
@@ -313,58 +279,83 @@
     // ========================================
 
     const gameContainer =
-      document.getElementById(
-        "gameContainer"
-      );
-
+      document.getElementById("gameContainer");
 
     const currentFruit =
-      document.getElementById(
-        "currentFruit"
-      );
-
+      document.getElementById("currentFruit");
 
     const guide =
-      document.getElementById(
-        "guide"
-      );
-
+      document.getElementById("guide");
 
     const dropButton =
-      document.getElementById(
-        "dropButton"
-      );
-
+      document.getElementById("dropButton");
 
 
     // ========================================
-    // サイズ
+    // フルーツ設定
+    // ========================================
+
+    const fruits = [
+
+      {
+        emoji: "🍒",
+        radius: 22
+      },
+
+      {
+        emoji: "🍓",
+        radius: 28
+      },
+
+      {
+        emoji: "🍊",
+        radius: 35
+      },
+
+      {
+        emoji: "🍎",
+        radius: 43
+      },
+
+      {
+        emoji: "🍉",
+        radius: 55
+      }
+
+    ];
+
+
+    // ========================================
+    // ゲームサイズ
     // ========================================
 
     let gameWidth =
       gameContainer.clientWidth;
 
-
     let gameHeight =
       gameContainer.clientHeight;
 
 
-    const fruitRadius =
-      24;
+    // 最初は🍒
 
+    let currentFruitType = 0;
+
+    let fruitX =
+      gameWidth / 2;
+
+    let canDrop =
+      true;
 
 
     // ========================================
-    // エンジン作成
+    // エンジン
     // ========================================
 
     const engine =
       Engine.create();
 
-
     engine.gravity.y =
       1;
-
 
 
     // ========================================
@@ -404,11 +395,6 @@
     );
 
 
-
-    // ========================================
-    // Runner
-    // ========================================
-
     const runner =
       Runner.create();
 
@@ -419,9 +405,8 @@
     );
 
 
-
     // ========================================
-    // 壁と床
+    // 壁・床
     // ========================================
 
     function createWalls() {
@@ -429,8 +414,6 @@
       const wallThickness =
         40;
 
-
-      // 床
 
       const floor =
         Bodies.rectangle(
@@ -444,19 +427,15 @@
           wallThickness,
 
           {
-            isStatic:
-              true,
+            isStatic: true,
 
             render: {
-              visible:
-                false
+              visible: false
             }
           }
 
         );
 
-
-      // 左壁
 
       const leftWall =
         Bodies.rectangle(
@@ -470,19 +449,15 @@
           gameHeight,
 
           {
-            isStatic:
-              true,
+            isStatic: true,
 
             render: {
-              visible:
-                false
+              visible: false
             }
           }
 
         );
 
-
-      // 右壁
 
       const rightWall =
         Bodies.rectangle(
@@ -496,12 +471,10 @@
           gameHeight,
 
           {
-            isStatic:
-              true,
+            isStatic: true,
 
             render: {
-              visible:
-                false
+              visible: false
             }
           }
 
@@ -526,154 +499,28 @@
     createWalls();
 
 
-
     // ========================================
-    // フルーツ位置
-    // ========================================
-
-    let fruitX =
-      gameWidth / 2;
-
-
-    let canDrop =
-      true;
-
-
-
-    // ========================================
-    // 上のフルーツ表示
+    // フルーツ本体を作る
     // ========================================
 
-    function updateCurrentFruit() {
+    function createPhysicsFruit(
+      x,
+      y,
+      type
+    ) {
 
-      currentFruit.style.left =
-        (
-          fruitX -
-          fruitRadius
-        ) + "px";
+      const fruitData =
+        fruits[type];
 
-
-      currentFruit.style.top =
-        "15px";
-
-
-      guide.style.left =
-        fruitX + "px";
-
-    }
-
-
-    updateCurrentFruit();
-
-
-
-    // ========================================
-    // 左
-    // ========================================
-
-    function moveLeft() {
-
-      if (!canDrop) {
-
-        return;
-
-      }
-
-
-      fruitX =
-        fruitX - 20;
-
-
-      if (
-        fruitX <
-        fruitRadius
-      ) {
-
-        fruitX =
-          fruitRadius;
-
-      }
-
-
-      updateCurrentFruit();
-
-    }
-
-
-
-    // ========================================
-    // 右
-    // ========================================
-
-    function moveRight() {
-
-      if (!canDrop) {
-
-        return;
-
-      }
-
-
-      fruitX =
-        fruitX + 20;
-
-
-      if (
-        fruitX >
-        gameWidth -
-        fruitRadius
-      ) {
-
-        fruitX =
-          gameWidth -
-          fruitRadius;
-
-      }
-
-
-      updateCurrentFruit();
-
-    }
-
-
-
-    // ========================================
-    // フルーツを落とす
-    // ========================================
-
-    function dropFruit() {
-
-      if (!canDrop) {
-
-        return;
-
-      }
-
-
-      canDrop =
-        false;
-
-
-      dropButton.disabled =
-        true;
-
-
-      currentFruit.style.display =
-        "none";
-
-
-      // ========================================
-      // Matter.jsの丸を作る
-      // ========================================
 
       const fruit =
         Bodies.circle(
 
-          fruitX,
+          x,
 
-          45,
+          y,
 
-          fruitRadius,
+          fruitData.radius,
 
           {
 
@@ -689,17 +536,16 @@
             density:
               0.001,
 
-
             render: {
 
               fillStyle:
-                "#ffb6c1",
+                "transparent",
 
               strokeStyle:
-                "#cc6677",
+                "transparent",
 
               lineWidth:
-                2
+                0
 
             }
 
@@ -708,29 +554,227 @@
         );
 
 
-      // フルーツだと分かるように
-      // 独自情報を追加
+      // 独自データ
 
       fruit.fruitType =
-        0;
+        type;
+
+
+      // 合体処理中かどうか
+
+      fruit.merging =
+        false;
 
 
       Composite.add(
-
         engine.world,
-
         fruit
+      );
+
+
+      return fruit;
+
+    }
+
+
+    // ========================================
+    // 上にあるフルーツを表示
+    // ========================================
+
+    function updateCurrentFruit() {
+
+      const fruitData =
+        fruits[currentFruitType];
+
+
+      const diameter =
+        fruitData.radius * 2;
+
+
+      currentFruit.textContent =
+        fruitData.emoji;
+
+
+      currentFruit.style.width =
+        diameter + "px";
+
+
+      currentFruit.style.height =
+        diameter + "px";
+
+
+      currentFruit.style.fontSize =
+        diameter * 0.8 + "px";
+
+
+      // 壁から出ないようにする
+
+      if (
+        fruitX <
+        fruitData.radius
+      ) {
+
+        fruitX =
+          fruitData.radius;
+
+      }
+
+
+      if (
+        fruitX >
+        gameWidth -
+        fruitData.radius
+      ) {
+
+        fruitX =
+          gameWidth -
+          fruitData.radius;
+
+      }
+
+
+      currentFruit.style.left =
+        (
+          fruitX -
+          fruitData.radius
+        ) + "px";
+
+
+      currentFruit.style.top =
+        "10px";
+
+
+      guide.style.left =
+        fruitX + "px";
+
+    }
+
+
+    updateCurrentFruit();
+
+
+    // ========================================
+    // 左へ移動
+    // ========================================
+
+    function moveLeft() {
+
+      if (!canDrop) {
+        return;
+      }
+
+
+      const radius =
+        fruits[currentFruitType].radius;
+
+
+      fruitX =
+        fruitX - 20;
+
+
+      if (
+        fruitX < radius
+      ) {
+
+        fruitX =
+          radius;
+
+      }
+
+
+      updateCurrentFruit();
+
+    }
+
+
+    // ========================================
+    // 右へ移動
+    // ========================================
+
+    function moveRight() {
+
+      if (!canDrop) {
+        return;
+      }
+
+
+      const radius =
+        fruits[currentFruitType].radius;
+
+
+      fruitX =
+        fruitX + 20;
+
+
+      if (
+        fruitX >
+        gameWidth - radius
+      ) {
+
+        fruitX =
+          gameWidth - radius;
+
+      }
+
+
+      updateCurrentFruit();
+
+    }
+
+
+    // ========================================
+    // 落とす
+    // ========================================
+
+    function dropFruit() {
+
+      if (!canDrop) {
+        return;
+      }
+
+
+      canDrop =
+        false;
+
+
+      dropButton.disabled =
+        true;
+
+
+      currentFruit.style.display =
+        "none";
+
+
+      const radius =
+        fruits[currentFruitType].radius;
+
+
+      createPhysicsFruit(
+
+        fruitX,
+
+        20 + radius,
+
+        currentFruitType
 
       );
 
 
-
       // ========================================
-      // 次のフルーツを準備
+      // 次のフルーツ
+      // 今は🍒だけ出す
       // ========================================
 
       setTimeout(
         function() {
+
+          currentFruitType =
+            0;
+
+
+          fruitX =
+            gameWidth / 2;
+
 
           canDrop =
             true;
@@ -744,10 +788,6 @@
             "flex";
 
 
-          fruitX =
-            gameWidth / 2;
-
-
           updateCurrentFruit();
 
         },
@@ -758,12 +798,150 @@
     }
 
 
+    // ========================================
+    // 衝突したとき
+    // ========================================
+
+    Events.on(
+
+      engine,
+
+      "collisionStart",
+
+      function(event) {
+
+        const pairs =
+          event.pairs;
+
+
+        pairs.forEach(
+          function(pair) {
+
+            const bodyA =
+              pair.bodyA;
+
+            const bodyB =
+              pair.bodyB;
+
+
+            // フルーツ以外なら無視
+
+            if (
+              bodyA.fruitType === undefined ||
+              bodyB.fruitType === undefined
+            ) {
+
+              return;
+
+            }
+
+
+            // 違う種類なら無視
+
+            if (
+              bodyA.fruitType !==
+              bodyB.fruitType
+            ) {
+
+              return;
+
+            }
+
+
+            // 🍉はそれ以上合体しない
+
+            if (
+              bodyA.fruitType >=
+              fruits.length - 1
+            ) {
+
+              return;
+
+            }
+
+
+            // すでに合体処理中なら無視
+
+            if (
+              bodyA.merging ||
+              bodyB.merging
+            ) {
+
+              return;
+
+            }
+
+
+            bodyA.merging =
+              true;
+
+            bodyB.merging =
+              true;
+
+
+            const newType =
+              bodyA.fruitType + 1;
+
+
+            // 2個の中間地点
+
+            const newX =
+              (
+                bodyA.position.x +
+                bodyB.position.x
+              ) / 2;
+
+
+            const newY =
+              (
+                bodyA.position.y +
+                bodyB.position.y
+              ) / 2;
+
+
+            // ========================================
+            // 2個を削除
+            // ========================================
+
+            Composite.remove(
+              engine.world,
+              bodyA
+            );
+
+
+            Composite.remove(
+              engine.world,
+              bodyB
+            );
+
+
+            // ========================================
+            // 大きいフルーツを作る
+            // ========================================
+
+            createPhysicsFruit(
+
+              newX,
+
+              newY,
+
+              newType
+
+            );
+
+          }
+        );
+
+      }
+
+    );
+
 
     // ========================================
-    // Canvasに🍒を描く
+    // フルーツをCanvasに描画
     // ========================================
 
-    Matter.Events.on(
+    Events.on(
 
       render,
 
@@ -794,6 +972,12 @@
             }
 
 
+            const fruitData =
+              fruits[
+                body.fruitType
+              ];
+
+
             context.save();
 
 
@@ -809,7 +993,11 @@
 
 
             context.font =
-              "40px Arial";
+              (
+                fruitData.radius *
+                1.65
+              ) +
+              "px Arial";
 
 
             context.textAlign =
@@ -821,7 +1009,7 @@
 
 
             context.fillText(
-              "🍒",
+              fruitData.emoji,
               0,
               1
             );
@@ -835,7 +1023,6 @@
       }
 
     );
-
 
 
     // ========================================
@@ -875,8 +1062,7 @@
         if (
           event.key ===
           "ArrowDown" ||
-          event.key ===
-          " "
+          event.key === " "
         ) {
 
           event.preventDefault();

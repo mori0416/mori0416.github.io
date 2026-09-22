@@ -34,7 +34,7 @@
     }
 
     /* ==============================
-       名前入力
+       名前
        ============================== */
 
     .name-area {
@@ -51,7 +51,7 @@
     }
 
     /* ==============================
-       スコア・NEXT
+       SCORE / NEXT
        ============================== */
 
     .game-info {
@@ -72,6 +72,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+
       font-size: 18px;
       font-weight: bold;
     }
@@ -120,7 +121,7 @@
     }
 
     /* ==============================
-       ゲームオーバーライン
+       GAME OVERライン
        ============================== */
 
     #dangerLine {
@@ -155,6 +156,35 @@
     }
 
     /* ==============================
+       カウントダウン
+       ============================== */
+
+    #gameOverCountdown {
+      position: absolute;
+
+      top: 128px;
+      left: 50%;
+
+      transform: translateX(-50%);
+
+      padding: 5px 12px;
+
+      background: rgba(229, 57, 53, 0.9);
+      color: #ffffff;
+
+      border-radius: 15px;
+
+      font-size: 16px;
+      font-weight: bold;
+
+      z-index: 20;
+
+      display: none;
+
+      pointer-events: none;
+    }
+
+    /* ==============================
        物理フルーツ
        ============================== */
 
@@ -173,6 +203,9 @@
       -webkit-user-select: none;
 
       transform-origin: center center;
+
+      /* 描画のガタつきを減らす */
+      will-change: transform;
     }
 
     /* ==============================
@@ -216,7 +249,7 @@
     }
 
     /* ==============================
-       GAME OVER
+       GAME OVER画面
        ============================== */
 
     #gameOverScreen {
@@ -334,7 +367,9 @@
 
     .ranking {
       max-width: 430px;
+
       margin: 35px auto 0;
+
       padding: 20px;
 
       border: 2px solid #dddddd;
@@ -489,7 +524,7 @@
     </div>
 
 
-    <!-- スコア・NEXT -->
+    <!-- SCORE / NEXT -->
 
     <div class="game-info">
 
@@ -519,6 +554,10 @@
       </div>
 
       <div id="dangerLine"></div>
+
+      <div id="gameOverCountdown">
+        GAME OVERまで 2.0秒
+      </div>
 
       <div id="guide"></div>
 
@@ -585,11 +624,7 @@
       <h2>🏆 TOP 10</h2>
 
       <ul id="rankingList">
-
-        <li>
-          ランキング読み込み中...
-        </li>
-
+        <li>ランキング読み込み中...</li>
       </ul>
 
     </section>
@@ -678,6 +713,9 @@
     const gameOverScreen =
       document.getElementById("gameOverScreen");
 
+    const gameOverCountdown =
+      document.getElementById("gameOverCountdown");
+
     const finalScore =
       document.getElementById("finalScore");
 
@@ -696,8 +734,6 @@
 
     // ========================================
     // フルーツ
-    //
-    // 前回から約1.2倍
     // ========================================
 
     const fruits = [
@@ -773,37 +809,32 @@
 
 
     // ========================================
-    // ゲーム状態
+    // ゲーム設定
     // ========================================
 
-    const dangerLineY =
-      120;
+    const dangerLineY = 120;
 
-    let score =
-      0;
+    const gameOverTime = 2000;
 
-    let gameOver =
-      false;
 
-    let gameStarted =
-      false;
+    let score = 0;
 
-    let scoreSaved =
-      false;
+    let gameOver = false;
 
-    let canDrop =
-      true;
+    let gameStarted = false;
+
+    let scoreSaved = false;
+
+    let canDrop = true;
 
     let fruitX =
       gameWidth / 2;
 
-    let currentPlayerName =
-      "";
+    let currentPlayerName = "";
 
 
     // ========================================
     // ランダム
-    //
     // 🍒 🍓 🍊
     // ========================================
 
@@ -829,6 +860,7 @@
 
     const engine =
       Engine.create();
+
 
     engine.gravity.y =
       1;
@@ -868,6 +900,7 @@
     const runner =
       Runner.create();
 
+
     Runner.run(
       runner,
       engine
@@ -880,8 +913,7 @@
 
     function createWalls() {
 
-      const thickness =
-        40;
+      const thickness = 40;
 
 
       const floor =
@@ -960,7 +992,7 @@
 
 
     // ========================================
-    // ゲーム開始確認
+    // ゲーム開始
     // ========================================
 
     function prepareGameStart() {
@@ -979,7 +1011,9 @@
         message.textContent =
           "名前を入力してください！";
 
+
         playerNameInput.focus();
+
 
         return false;
 
@@ -1024,7 +1058,7 @@
 
 
     // ========================================
-    // フルーツ作成
+    // 物理フルーツ
     // ========================================
 
     function createPhysicsFruit(
@@ -1082,12 +1116,18 @@
       body.fruitType =
         type;
 
+
       body.merging =
         false;
+
 
       body.dangerStart =
         null;
 
+
+      // ========================================
+      // 絵文字
+      // ========================================
 
       const element =
         document.createElement(
@@ -1122,6 +1162,15 @@
         ) + "px";
 
 
+      /*
+        left/topを毎フレーム変えるのではなく、
+        transformだけで動かします。
+      */
+
+      element.style.left = "0px";
+      element.style.top = "0px";
+
+
       gameContainer.appendChild(
         element
       );
@@ -1137,71 +1186,94 @@
       );
 
 
+      // 作成直後から同じ位置に表示
+
+      syncFruitElement(
+        body
+      );
+
+
       return body;
 
     }
 
 
     // ========================================
-    // 絵文字同期
+    // 1個のフルーツを同期
     // ========================================
 
-    function updateFruitElements() {
+    function syncFruitElement(body) {
 
-      const bodies =
-        Composite.allBodies(
-          engine.world
-        );
+      if (
+        body.fruitType === undefined ||
+        !body.fruitElement
+      ) {
 
+        return;
 
-      bodies.forEach(
-        function(body) {
-
-          if (
-            body.fruitType === undefined ||
-            !body.fruitElement
-          ) {
-
-            return;
-
-          }
+      }
 
 
-          const data =
-            fruits[body.fruitType];
+      const data =
+        fruits[body.fruitType];
 
 
-          body.fruitElement.style.left =
-            (
-              body.position.x -
-              data.radius
-            ) + "px";
+      const x =
+        body.position.x -
+        data.radius;
 
 
-          body.fruitElement.style.top =
-            (
-              body.position.y -
-              data.radius
-            ) + "px";
+      const y =
+        body.position.y -
+        data.radius;
 
 
-          body.fruitElement.style.transform =
-            "rotate(" +
-            body.angle +
-            "rad)";
-
-        }
-      );
-
-
-      requestAnimationFrame(
-        updateFruitElements
-      );
+      body.fruitElement.style.transform =
+        "translate3d(" +
+        x +
+        "px," +
+        y +
+        "px,0) rotate(" +
+        body.angle +
+        "rad)";
 
     }
 
 
-    updateFruitElements();
+    // ========================================
+    // Matter.jsの描画直前に同期
+    //
+    // Canvasの丸とHTML絵文字の更新を
+    // 同じ描画タイミングに近づける
+    // ========================================
+
+    Events.on(
+
+      render,
+
+      "beforeRender",
+
+      function() {
+
+        const bodies =
+          Composite.allBodies(
+            engine.world
+          );
+
+
+        bodies.forEach(
+          function(body) {
+
+            syncFruitElement(
+              body
+            );
+
+          }
+        );
+
+      }
+
+    );
 
 
     // ========================================
@@ -1238,6 +1310,11 @@
         data.radius * 2;
 
 
+      /*
+        次のフルーツが大きくても
+        壁からはみ出さないように補正
+      */
+
       if (
         fruitX < data.radius
       ) {
@@ -1254,7 +1331,8 @@
       ) {
 
         fruitX =
-          gameWidth - data.radius;
+          gameWidth -
+          data.radius;
 
       }
 
@@ -1302,14 +1380,14 @@
     // 左右移動
     // ========================================
 
-    let moveDirection =
-      0;
+    let moveDirection = 0;
+
 
     let lastMoveTime =
       performance.now();
 
-    const moveSpeed =
-      180;
+
+    const moveSpeed = 180;
 
 
     function movementLoop(
@@ -1356,7 +1434,9 @@
     );
 
 
-    function startMove(direction) {
+    function startMove(
+      direction
+    ) {
 
       if (
         gameOver ||
@@ -1376,8 +1456,7 @@
 
     function stopMove() {
 
-      moveDirection =
-        0;
+      moveDirection = 0;
 
     }
 
@@ -1398,8 +1477,6 @@
       }
 
 
-      // 名前がなければ開始しない
-
       if (
         !prepareGameStart()
       ) {
@@ -1409,12 +1486,10 @@
       }
 
 
-      canDrop =
-        false;
+      canDrop = false;
 
 
-      moveDirection =
-        0;
+      moveDirection = 0;
 
 
       dropButton.disabled =
@@ -1449,6 +1524,10 @@
           }
 
 
+          // ====================================
+          // NEXTを現在のフルーツへ
+          // ====================================
+
           currentFruitType =
             nextFruitType;
 
@@ -1457,12 +1536,15 @@
             randomFruitType();
 
 
-          fruitX =
-            gameWidth / 2;
+          /*
+            ここではfruitXを中央に戻しません。
+
+            つまり前回落とした位置から
+            次のフルーツを操作できます。
+          */
 
 
-          canDrop =
-            true;
+          canDrop = true;
 
 
           dropButton.disabled =
@@ -1474,6 +1556,7 @@
 
 
           updateCurrentFruit();
+
 
           updateNextDisplay();
 
@@ -1509,6 +1592,7 @@
 
             const bodyA =
               pair.bodyA;
+
 
             const bodyB =
               pair.bodyB;
@@ -1556,11 +1640,8 @@
             }
 
 
-            bodyA.merging =
-              true;
-
-            bodyB.merging =
-              true;
+            bodyA.merging = true;
+            bodyB.merging = true;
 
 
             const newType =
@@ -1622,7 +1703,7 @@
             );
 
 
-            // 新フルーツ
+            // 新しいフルーツ
 
             createPhysicsFruit(
 
@@ -1652,6 +1733,9 @@
         !gameStarted
       ) {
 
+        gameOverCountdown.style.display =
+          "none";
+
         return;
 
       }
@@ -1665,6 +1749,15 @@
 
       const now =
         performance.now();
+
+
+      /*
+        複数のフルーツが危険な場合は
+        一番残り時間が短いものを表示
+      */
+
+      let shortestRemaining =
+        null;
 
 
       for (
@@ -1691,6 +1784,11 @@
           radius;
 
 
+        /*
+          落下しているだけでカウントを
+          開始しないようにする
+        */
+
         const almostStopped =
           Math.abs(
             body.velocity.y
@@ -1714,10 +1812,36 @@
           }
 
 
-          if (
+          const elapsed =
             now -
-            body.dangerStart >
-            2000
+            body.dangerStart;
+
+
+          const remaining =
+            Math.max(
+              0,
+              gameOverTime -
+              elapsed
+            );
+
+
+          if (
+            shortestRemaining === null ||
+            remaining <
+            shortestRemaining
+          ) {
+
+            shortestRemaining =
+              remaining;
+
+          }
+
+
+          // 0秒
+
+          if (
+            elapsed >=
+            gameOverTime
           ) {
 
             endGame();
@@ -1728,6 +1852,11 @@
 
         } else {
 
+          /*
+            ラインより下へ戻ったら
+            そのフルーツのカウントをリセット
+          */
+
           body.dangerStart =
             null;
 
@@ -1735,12 +1864,51 @@
 
       }
 
+
+      // ========================================
+      // カウントダウン表示
+      // ========================================
+
+      if (
+        shortestRemaining !==
+        null
+      ) {
+
+        const seconds =
+          (
+            shortestRemaining /
+            1000
+          ).toFixed(1);
+
+
+        gameOverCountdown.textContent =
+          "GAME OVERまで " +
+          seconds +
+          "秒";
+
+
+        gameOverCountdown.style.display =
+          "block";
+
+      } else {
+
+        gameOverCountdown.style.display =
+          "none";
+
+      }
+
     }
 
 
+    /*
+      0.1秒ごとではなく
+      約0.05秒ごとに更新して
+      カウントを滑らかにする
+    */
+
     setInterval(
       checkGameOver,
-      100
+      50
     );
 
 
@@ -1755,23 +1923,22 @@
       }
 
 
-      gameOver =
-        true;
+      gameOver = true;
 
 
-      canDrop =
-        false;
+      canDrop = false;
 
 
-      moveDirection =
-        0;
+      moveDirection = 0;
 
 
       dropButton.disabled =
         true;
 
+
       leftButton.disabled =
         true;
+
 
       rightButton.disabled =
         true;
@@ -1780,7 +1947,12 @@
       currentFruit.style.display =
         "none";
 
+
       guide.style.display =
+        "none";
+
+
+      gameOverCountdown.style.display =
         "none";
 
 
@@ -1792,15 +1964,13 @@
         "flex";
 
 
-      // スコア保存
-
       await saveScore();
 
     }
 
 
     // ========================================
-    // Supabaseへ保存
+    // Supabase保存
     // ========================================
 
     async function saveScore() {
@@ -1810,8 +1980,7 @@
       }
 
 
-      scoreSaved =
-        true;
+      scoreSaved = true;
 
 
       saveMessage.textContent =
@@ -1846,6 +2015,7 @@
         saveMessage.textContent =
           "スコアの保存に失敗しました";
 
+
         return;
 
       }
@@ -1861,7 +2031,7 @@
 
 
     // ========================================
-    // ランキング取得
+    // ランキング
     // ========================================
 
     async function loadRanking() {
@@ -1902,13 +2072,13 @@
         rankingList.innerHTML =
           "<li>ランキングを読み込めませんでした</li>";
 
+
         return;
 
       }
 
 
-      rankingList.innerHTML =
-        "";
+      rankingList.innerHTML = "";
 
 
       if (
@@ -1918,6 +2088,7 @@
 
         rankingList.innerHTML =
           "<li>まだスコアがありません</li>";
+
 
         return;
 
@@ -1938,8 +2109,6 @@
             "ranking-row"
           );
 
-
-          // TOP3の背景
 
           if (index === 0) {
 
@@ -2001,7 +2170,8 @@
           } else {
 
             position.textContent =
-              (index + 1) + "位";
+              (index + 1) +
+              "位";
 
           }
 
@@ -2037,7 +2207,8 @@
 
 
           scoreElement.textContent =
-            record.score + "点";
+            record.score +
+            "点";
 
 
           li.appendChild(
@@ -2067,7 +2238,7 @@
 
 
     // ========================================
-    // リスタート
+    // もう一度遊ぶ
     // ========================================
 
     restartButton.addEventListener(
@@ -2084,7 +2255,7 @@
 
 
     // ========================================
-    // 左右ボタン
+    // ボタン操作
     // ========================================
 
     leftButton.addEventListener(
@@ -2218,7 +2389,7 @@
 
 
     // ========================================
-    // 最初にランキング取得
+    // ランキング読み込み
     // ========================================
 
     loadRanking();

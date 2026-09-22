@@ -30,6 +30,7 @@
     .description {
       margin-bottom: 25px;
       font-size: 18px;
+      line-height: 1.7;
     }
 
     .game-area {
@@ -103,7 +104,7 @@
       align-items: center;
       justify-content: center;
 
-      font-size: 60px;
+      font-size: 52px;
 
       cursor: default;
 
@@ -116,6 +117,11 @@
     .hole.active {
       background-color: #dff3d8;
       cursor: pointer;
+    }
+
+    .hole.bonus {
+      background-color: #fff1a8;
+      border-color: #e0a000;
     }
 
     .mole {
@@ -251,7 +257,7 @@
       }
 
       .hole {
-        font-size: 45px;
+        font-size: 40px;
         border-width: 2px;
       }
 
@@ -274,7 +280,8 @@
     <h1>Game 01</h1>
 
     <p class="description">
-      出てきたモグラを叩こう！
+      🐹 モグラを叩こう！<br>
+      👑🐹 高得点モグラは3点！
     </p>
 
 
@@ -315,46 +322,44 @@
       </button>
 
 
-      <!-- ==============================
-           3×3 モグラ叩き
-           ============================== -->
+      <!-- 3×3 -->
 
       <div id="moleGame">
 
         <div class="hole" onclick="hitMole(0)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
         <div class="hole" onclick="hitMole(1)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
         <div class="hole" onclick="hitMole(2)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
         <div class="hole" onclick="hitMole(3)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
         <div class="hole" onclick="hitMole(4)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
         <div class="hole" onclick="hitMole(5)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
         <div class="hole" onclick="hitMole(6)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
         <div class="hole" onclick="hitMole(7)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
         <div class="hole" onclick="hitMole(8)">
-          <span class="mole">🐹</span>
+          <span class="mole"></span>
         </div>
 
       </div>
@@ -363,9 +368,7 @@
       <div id="message"></div>
 
 
-      <!-- ==============================
-           ランキング
-           ============================== -->
+      <!-- ランキング -->
 
       <div id="ranking">
 
@@ -444,17 +447,19 @@
 
     let timer;
 
+    let moleTimer;
+
     let gameRunning = false;
 
     let activeMole = -1;
+
+    let bonusMole = false;
 
     let currentPlayerName = "";
 
 
     const holes =
-      document.querySelectorAll(
-        ".hole"
-      );
+      document.querySelectorAll(".hole");
 
 
 
@@ -470,8 +475,6 @@
           .value
           .trim();
 
-
-      // 名前チェック
 
       if (playerName === "") {
 
@@ -493,57 +496,54 @@
 
       gameRunning = true;
 
+      activeMole = -1;
+
+      bonusMole = false;
+
+
+      clearInterval(timer);
+
+      clearTimeout(moleTimer);
+
 
       document.getElementById("score").textContent =
         score;
 
-
       document.getElementById("time").textContent =
         time;
-
 
       document.getElementById("message").textContent =
         "";
 
-
       document.getElementById("startButton").disabled =
         true;
-
 
       document.getElementById("playerName").disabled =
         true;
 
 
-      // 最初のモグラ
-
       showMole();
 
 
-      // ========================================
-      // タイマー
-      // ========================================
+      // 1秒ごとのゲームタイマー
 
       timer =
-        setInterval(
-          function() {
+        setInterval(function() {
 
-            time =
-              time - 1;
+          time = time - 1;
 
 
-            document.getElementById("time").textContent =
-              time;
+          document.getElementById("time").textContent =
+            time;
 
 
-            if (time <= 0) {
+          if (time <= 0) {
 
-              endGame();
+            endGame();
 
-            }
+          }
 
-          },
-          1000
-        );
+        }, 1000);
 
     }
 
@@ -555,23 +555,40 @@
 
     function showMole() {
 
-      // 今いるモグラを消す
+      if (!gameRunning) {
 
-      holes.forEach(
-        function(hole) {
+        return;
 
-          hole.classList.remove(
-            "active"
-          );
+      }
 
-        }
-      );
 
+      clearTimeout(moleTimer);
+
+
+      // 前のモグラを消す
+
+      holes.forEach(function(hole) {
+
+        hole.classList.remove("active");
+
+        hole.classList.remove("bonus");
+
+
+        const mole =
+          hole.querySelector(".mole");
+
+
+        mole.textContent =
+          "";
+
+      });
+
+
+
+      // 新しい場所を決める
 
       let newMole;
 
-
-      // 同じ場所が連続しないようにする
 
       do {
 
@@ -589,11 +606,64 @@
         newMole;
 
 
-      holes[
-        activeMole
-      ].classList.add(
+
+      // ========================================
+      // 20%の確率で高得点モグラ
+      // ========================================
+
+      bonusMole =
+        Math.random() < 0.20;
+
+
+
+      const activeHole =
+        holes[activeMole];
+
+
+      const mole =
+        activeHole.querySelector(
+          ".mole"
+        );
+
+
+      activeHole.classList.add(
         "active"
       );
+
+
+
+      if (bonusMole) {
+
+        activeHole.classList.add(
+          "bonus"
+        );
+
+        mole.textContent =
+          "👑🐹";
+
+      } else {
+
+        mole.textContent =
+          "🐹";
+
+      }
+
+
+
+      // ========================================
+      // 0.8秒で逃げる
+      // ========================================
+
+      moleTimer =
+        setTimeout(function() {
+
+          if (gameRunning) {
+
+            showMole();
+
+          }
+
+        }, 800);
 
     }
 
@@ -603,9 +673,7 @@
     // モグラを叩く
     // ========================================
 
-    function hitMole(
-      holeNumber
-    ) {
+    function hitMole(holeNumber) {
 
       if (!gameRunning) {
 
@@ -614,11 +682,8 @@
       }
 
 
-      // モグラがいるマスだけ正解
-
       if (
-        holeNumber !==
-        activeMole
+        holeNumber !== activeMole
       ) {
 
         return;
@@ -626,10 +691,24 @@
       }
 
 
-      // 1点追加
+      // 二重クリック防止
 
-      score =
-        score + 1;
+      clearTimeout(moleTimer);
+
+
+      // 高得点モグラなら3点
+
+      if (bonusMole) {
+
+        score =
+          score + 3;
+
+      } else {
+
+        score =
+          score + 1;
+
+      }
 
 
       document.getElementById("score").textContent =
@@ -661,22 +740,32 @@
         false;
 
 
-      clearInterval(
-        timer
-      );
+      clearInterval(timer);
+
+      clearTimeout(moleTimer);
 
 
-      // モグラを消す
+      holes.forEach(function(hole) {
 
-      holes.forEach(
-        function(hole) {
+        hole.classList.remove(
+          "active"
+        );
 
-          hole.classList.remove(
-            "active"
+        hole.classList.remove(
+          "bonus"
+        );
+
+
+        const mole =
+          hole.querySelector(
+            ".mole"
           );
 
-        }
-      );
+
+        mole.textContent =
+          "";
+
+      });
 
 
       activeMole =
@@ -685,7 +774,6 @@
 
       document.getElementById("startButton").disabled =
         false;
-
 
       document.getElementById("playerName").disabled =
         false;
@@ -696,8 +784,6 @@
         score +
         " 点でした！";
 
-
-      // Supabaseへ保存
 
       saveScore();
 
@@ -765,9 +851,7 @@
               ascending: false
             }
           )
-          .limit(
-            10
-          );
+          .limit(10);
 
 
       if (error) {
@@ -791,8 +875,6 @@
       rankingBody.innerHTML =
         "";
 
-
-      // スコアがまだない場合
 
       if (data.length === 0) {
 
@@ -836,138 +918,132 @@
       // ランキング作成
       // ========================================
 
-      data.forEach(
-        function(item, index) {
+      data.forEach(function(item, index) {
 
-          const rank =
-            index + 1;
-
-
-          const row =
-            document.createElement(
-              "tr"
-            );
+        const rank =
+          index + 1;
 
 
-          // 上位3人
-
-          if (rank === 1) {
-
-            row.classList.add(
-              "rank-1"
-            );
-
-          } else if (rank === 2) {
-
-            row.classList.add(
-              "rank-2"
-            );
-
-          } else if (rank === 3) {
-
-            row.classList.add(
-              "rank-3"
-            );
-
-          }
-
-
-
-          // 順位
-
-          const rankCell =
-            document.createElement(
-              "td"
-            );
-
-
-          rankCell.classList.add(
-            "ranking-rank"
+        const row =
+          document.createElement(
+            "tr"
           );
 
 
-          if (rank === 1) {
+        if (rank === 1) {
 
-            rankCell.textContent =
-              "🥇 1";
-
-          } else if (rank === 2) {
-
-            rankCell.textContent =
-              "🥈 2";
-
-          } else if (rank === 3) {
-
-            rankCell.textContent =
-              "🥉 3";
-
-          } else {
-
-            rankCell.textContent =
-              rank;
-
-          }
-
-
-
-          // 名前
-
-          const nameCell =
-            document.createElement(
-              "td"
-            );
-
-
-          nameCell.classList.add(
-            "ranking-name"
+          row.classList.add(
+            "rank-1"
           );
 
+        } else if (rank === 2) {
 
-          nameCell.textContent =
-            item.player_name;
-
-
-
-          // スコア
-
-          const scoreCell =
-            document.createElement(
-              "td"
-            );
-
-
-          scoreCell.classList.add(
-            "ranking-score"
+          row.classList.add(
+            "rank-2"
           );
 
+        } else if (rank === 3) {
 
-          scoreCell.textContent =
-            item.score +
-            "点";
-
-
-
-          row.appendChild(
-            rankCell
-          );
-
-
-          row.appendChild(
-            nameCell
-          );
-
-
-          row.appendChild(
-            scoreCell
-          );
-
-
-          rankingBody.appendChild(
-            row
+          row.classList.add(
+            "rank-3"
           );
 
         }
-      );
+
+
+
+        // 順位
+
+        const rankCell =
+          document.createElement(
+            "td"
+          );
+
+
+        rankCell.classList.add(
+          "ranking-rank"
+        );
+
+
+        if (rank === 1) {
+
+          rankCell.textContent =
+            "🥇 1";
+
+        } else if (rank === 2) {
+
+          rankCell.textContent =
+            "🥈 2";
+
+        } else if (rank === 3) {
+
+          rankCell.textContent =
+            "🥉 3";
+
+        } else {
+
+          rankCell.textContent =
+            rank;
+
+        }
+
+
+
+        // 名前
+
+        const nameCell =
+          document.createElement(
+            "td"
+          );
+
+
+        nameCell.classList.add(
+          "ranking-name"
+        );
+
+
+        nameCell.textContent =
+          item.player_name;
+
+
+
+        // スコア
+
+        const scoreCell =
+          document.createElement(
+            "td"
+          );
+
+
+        scoreCell.classList.add(
+          "ranking-score"
+        );
+
+
+        scoreCell.textContent =
+          item.score +
+          "点";
+
+
+
+        row.appendChild(
+          rankCell
+        );
+
+        row.appendChild(
+          nameCell
+        );
+
+        row.appendChild(
+          scoreCell
+        );
+
+
+        rankingBody.appendChild(
+          row
+        );
+
+      });
 
     }
 
@@ -980,7 +1056,6 @@
     loadRanking();
 
   </script>
-
 
 </body>
 

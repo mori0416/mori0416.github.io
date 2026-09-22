@@ -797,6 +797,18 @@
       "keydown",
       function(event) {
 
+            if (
+      gameRunning &&
+      (
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight" ||
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown"
+      )
+    ) {
+      event.preventDefault();
+    }
+
         if (
           event.key === "ArrowLeft" ||
           event.key === "a" ||

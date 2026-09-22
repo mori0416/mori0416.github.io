@@ -20,57 +20,145 @@
     main {
       max-width: 800px;
       margin: 0 auto;
-      padding: 40px 20px;
+      padding: 30px 20px;
     }
 
     h1 {
-      margin-bottom: 20px;
-    }
-
-    .game-area {
-      margin: 0 auto 30px;
-      padding: 40px 20px;
-      border: 2px solid #333333;
-      background-color: #f5f5f5;
+      margin-bottom: 10px;
     }
 
     .description {
-      font-size: 20px;
-      margin-bottom: 30px;
+      font-size: 18px;
+      margin-bottom: 20px;
     }
 
-    input {
-      width: 150px;
-      padding: 12px;
-      font-size: 20px;
-      text-align: center;
+
+    /* ==============================
+       ゲームエリア
+       ============================== */
+
+    #gameContainer {
+      position: relative;
+
+      width: 360px;
+      height: 520px;
+
+      margin: 0 auto 20px;
+
+      background-color: #f5f5f5;
+
+      border-left: 5px solid #555555;
+      border-right: 5px solid #555555;
+      border-bottom: 5px solid #555555;
+
+      overflow: hidden;
     }
 
-    button {
-      padding: 12px 25px;
-      font-size: 20px;
+
+    /* ==============================
+       落とす位置のガイド
+       ============================== */
+
+    #guide {
+      position: absolute;
+
+      top: 0;
+
+      width: 2px;
+      height: 80px;
+
+      background-color: #bbbbbb;
+
+      transform: translateX(-50%);
+    }
+
+
+    /* ==============================
+       フルーツ
+       ============================== */
+
+    .fruit {
+      position: absolute;
+
+      width: 50px;
+      height: 50px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 42px;
+
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+
+    /* ==============================
+       操作ボタン
+       ============================== */
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control-button {
+      font-size: 22px;
+      padding: 12px 22px;
+
+      border: none;
+      border-radius: 8px;
+
+      background-color: #333333;
+      color: #ffffff;
+
       cursor: pointer;
-      margin-left: 10px;
+
+      min-width: 80px;
+
+      touch-action: manipulation;
     }
+
+    .control-button:hover {
+      opacity: 0.8;
+    }
+
+    .control-button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+
+    /* ==============================
+       メッセージ
+       ============================== */
 
     #message {
-      font-size: 22px;
-      margin-top: 30px;
       min-height: 30px;
+      margin-top: 15px;
+      font-size: 20px;
     }
 
-    #count {
-      font-size: 18px;
-      margin-top: 20px;
-    }
+
+    /* ==============================
+       戻る
+       ============================== */
 
     .back {
       display: inline-block;
-      margin-top: 20px;
+
+      margin-top: 25px;
+
       padding: 10px 20px;
+
       background-color: #333333;
       color: #ffffff;
+
       text-decoration: none;
+
       border-radius: 5px;
     }
 
@@ -78,19 +166,32 @@
       opacity: 0.8;
     }
 
-    @media (max-width: 600px) {
 
-      input {
-        width: 100px;
+    /* ==============================
+       スマホ
+       ============================== */
+
+    @media (max-width: 500px) {
+
+      main {
+        padding: 20px 10px;
       }
 
-      button {
-        margin-left: 0;
-        margin-top: 15px;
+      #gameContainer {
+        width: 300px;
+        height: 450px;
       }
+
+      .control-button {
+        font-size: 20px;
+        padding: 12px 18px;
+      }
+
     }
+
   </style>
 </head>
+
 
 <body>
 
@@ -98,30 +199,58 @@
 
     <h1>Game 03</h1>
 
-    <div class="game-area">
+    <p class="description">
+      フルーツを好きな位置から落としてみよう！
+    </p>
 
-      <p class="description">
-        1〜100の数字を当ててください！
-      </p>
 
-      <input
-        type="number"
-        id="guess"
-        min="1"
-        max="100"
-        placeholder="数字">
+    <!-- ゲーム画面 -->
 
-      <button onclick="checkAnswer()">
-        決定！
-      </button>
+    <div id="gameContainer">
 
-      <div id="message"></div>
-
-      <div id="count">
-        挑戦回数：0回
-      </div>
+      <div id="guide"></div>
 
     </div>
+
+
+    <!-- 操作 -->
+
+    <div class="controls">
+
+      <button
+        class="control-button"
+        onclick="moveLeft()">
+
+        ←
+
+      </button>
+
+
+      <button
+        class="control-button"
+        id="dropButton"
+        onclick="dropFruit()">
+
+        落とす！
+
+      </button>
+
+
+      <button
+        class="control-button"
+        onclick="moveRight()">
+
+        →
+
+      </button>
+
+    </div>
+
+
+    <div id="message">
+      左右に動かして落としてみよう！
+    </div>
+
 
     <a class="back" href="index.html">
       ← ゲーム一覧に戻る
@@ -129,51 +258,336 @@
 
   </main>
 
+
+
   <script>
 
-    let answer = Math.floor(Math.random() * 100) + 1;
-    let count = 0;
+    // ========================================
+    // 基本設定
+    // ========================================
 
-    function checkAnswer() {
+    const gameContainer =
+      document.getElementById(
+        "gameContainer"
+      );
 
-      const input = document.getElementById("guess");
-      const guess = Number(input.value);
 
-      if (guess < 1 || guess > 100) {
+    const guide =
+      document.getElementById(
+        "guide"
+      );
 
-        document.getElementById("message").textContent =
-          "1〜100の数字を入力してください。";
 
-        return;
-      }
+    const dropButton =
+      document.getElementById(
+        "dropButton"
+      );
 
-      count = count + 1;
 
-      document.getElementById("count").textContent =
-        "挑戦回数：" + count + "回";
+    let currentFruit = null;
 
-      if (guess === answer) {
+    let fruitX = 155;
 
-        document.getElementById("message").textContent =
-          "🎉 正解！ " + answer + " でした！";
+    let dropping = false;
 
-      } else if (guess < answer) {
 
-        document.getElementById("message").textContent =
-          "もっと大きい数字です！";
 
-      } else {
+    // ========================================
+    // 新しいフルーツを作る
+    // ========================================
 
-        document.getElementById("message").textContent =
-          "もっと小さい数字です！";
+    function createFruit() {
 
-      }
+      const fruit =
+        document.createElement(
+          "div"
+        );
 
-      input.value = "";
-      input.focus();
+
+      fruit.classList.add(
+        "fruit"
+      );
+
+
+      fruit.textContent =
+        "🍒";
+
+
+      gameContainer.appendChild(
+        fruit
+      );
+
+
+      currentFruit =
+        fruit;
+
+
+      // 真ん中に出す
+
+      fruitX =
+        (
+          gameContainer.clientWidth
+          - 50
+        ) / 2;
+
+
+      currentFruit.style.left =
+        fruitX + "px";
+
+
+      currentFruit.style.top =
+        "20px";
+
+
+      updateGuide();
+
+
+      dropping =
+        false;
+
+
+      dropButton.disabled =
+        false;
+
     }
 
+
+
+    // ========================================
+    // 左へ移動
+    // ========================================
+
+    function moveLeft() {
+
+      if (
+        dropping ||
+        currentFruit === null
+      ) {
+
+        return;
+
+      }
+
+
+      fruitX =
+        fruitX - 20;
+
+
+      if (fruitX < 0) {
+
+        fruitX =
+          0;
+
+      }
+
+
+      currentFruit.style.left =
+        fruitX + "px";
+
+
+      updateGuide();
+
+    }
+
+
+
+    // ========================================
+    // 右へ移動
+    // ========================================
+
+    function moveRight() {
+
+      if (
+        dropping ||
+        currentFruit === null
+      ) {
+
+        return;
+
+      }
+
+
+      fruitX =
+        fruitX + 20;
+
+
+      const maxX =
+        gameContainer.clientWidth
+        - 50;
+
+
+      if (fruitX > maxX) {
+
+        fruitX =
+          maxX;
+
+      }
+
+
+      currentFruit.style.left =
+        fruitX + "px";
+
+
+      updateGuide();
+
+    }
+
+
+
+    // ========================================
+    // ガイド線
+    // ========================================
+
+    function updateGuide() {
+
+      guide.style.left =
+        (
+          fruitX + 25
+        ) + "px";
+
+    }
+
+
+
+    // ========================================
+    // フルーツを落とす
+    // ========================================
+
+    function dropFruit() {
+
+      if (
+        dropping ||
+        currentFruit === null
+      ) {
+
+        return;
+
+      }
+
+
+      dropping =
+        true;
+
+
+      dropButton.disabled =
+        true;
+
+
+      const fallingFruit =
+        currentFruit;
+
+
+      currentFruit =
+        null;
+
+
+      let y =
+        20;
+
+
+      // ========================================
+      // 落下アニメーション
+      // ========================================
+
+      const fallTimer =
+        setInterval(
+          function() {
+
+            y =
+              y + 10;
+
+
+            fallingFruit.style.top =
+              y + "px";
+
+
+            const floor =
+              gameContainer.clientHeight
+              - 50;
+
+
+            if (y >= floor) {
+
+              fallingFruit.style.top =
+                floor + "px";
+
+
+              clearInterval(
+                fallTimer
+              );
+
+
+              // 少し待って次のフルーツ
+
+              setTimeout(
+                function() {
+
+                  createFruit();
+
+                },
+                300
+              );
+
+            }
+
+          },
+          16
+        );
+
+    }
+
+
+
+    // ========================================
+    // キーボード操作
+    // ========================================
+
+    document.addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "ArrowLeft") {
+
+          event.preventDefault();
+
+          moveLeft();
+
+        }
+
+
+        if (event.key === "ArrowRight") {
+
+          event.preventDefault();
+
+          moveRight();
+
+        }
+
+
+        if (
+          event.key === "ArrowDown" ||
+          event.key === " "
+        ) {
+
+          event.preventDefault();
+
+          dropFruit();
+
+        }
+
+      }
+    );
+
+
+
+    // ========================================
+    // 最初のフルーツ
+    // ========================================
+
+    createFruit();
+
   </script>
+
 
 </body>
 

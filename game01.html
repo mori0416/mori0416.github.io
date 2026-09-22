@@ -61,6 +61,23 @@
       margin-top: 20px;
     }
 
+    #ranking {
+      max-width: 500px;
+      margin: 40px auto 0;
+      padding: 20px;
+      border-top: 2px solid #333333;
+    }
+
+    #ranking h2 {
+      margin-bottom: 20px;
+    }
+
+    #rankingList {
+      text-align: left;
+      font-size: 20px;
+      line-height: 2;
+    }
+
     .back {
       display: inline-block;
       margin-top: 30px;
@@ -105,6 +122,16 @@
 
       <div id="message"></div>
 
+      <div id="ranking">
+
+        <h2>🏆 ランキング</h2>
+
+        <ol id="rankingList">
+          <li>読み込み中...</li>
+        </ol>
+
+      </div>
+
     </div>
 
     <a class="back" href="index.html">
@@ -113,10 +140,16 @@
 
   </main>
 
+
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+
   <script>
+
+    // ========================================
+    // Supabaseの設定
+    // ========================================
 
     const SUPABASE_URL = "https://vyvbgeqcnrouwpmjwzph.supabase.co";
     const SUPABASE_KEY = "sb_publishable_CEACy8FVXvk1IVVh5QtSCA_jiNLwHTT";
@@ -126,6 +159,10 @@
       SUPABASE_KEY
     );
 
+
+    // ========================================
+    // ゲーム
+    // ========================================
 
     let score = 0;
     let time = 10;
@@ -181,6 +218,10 @@
     }
 
 
+    // ========================================
+    // スコアをSupabaseに保存
+    // ========================================
+
     async function saveScore() {
 
       const { error } = await supabaseClient
@@ -193,12 +234,65 @@
         ]);
 
       if (error) {
+
         console.log("スコア保存エラー:", error);
+
       } else {
+
         console.log("スコアを保存しました！");
+
+        // 保存後にランキングを更新
+        loadRanking();
       }
 
     }
+
+
+    // ========================================
+    // ランキングをSupabaseから取得
+    // ========================================
+
+    async function loadRanking() {
+
+      const { data, error } = await supabaseClient
+        .from("game01_scores")
+        .select("player_name, score")
+        .order("score", { ascending: false })
+        .limit(10);
+
+      if (error) {
+
+        console.log("ランキング取得エラー:", error);
+
+        return;
+      }
+
+      const rankingList =
+        document.getElementById("rankingList");
+
+      rankingList.innerHTML = "";
+
+
+      data.forEach(function(item) {
+
+        const li =
+          document.createElement("li");
+
+        li.textContent =
+          item.player_name + "　" + item.score + "点";
+
+        rankingList.appendChild(li);
+
+      });
+
+    }
+
+
+    // ========================================
+    // ページを開いたときランキングを表示
+    // ========================================
+
+    loadRanking();
 
   </script>
 

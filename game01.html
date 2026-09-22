@@ -44,6 +44,19 @@
       margin-bottom: 20px;
     }
 
+    .player-name {
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .player-name input {
+      width: 200px;
+      padding: 10px;
+      font-size: 18px;
+      border: 1px solid #aaaaaa;
+      border-radius: 5px;
+    }
+
     button {
       font-size: 24px;
       padding: 20px 40px;
@@ -59,24 +72,82 @@
     #message {
       font-size: 22px;
       margin-top: 20px;
+      min-height: 30px;
     }
 
+
+    /* ==============================
+       ランキング
+       ============================== */
+
     #ranking {
-      max-width: 500px;
+      max-width: 650px;
       margin: 40px auto 0;
-      padding: 20px;
-      border-top: 2px solid #333333;
+      padding-top: 20px;
+      border-top: 2px solid #dddddd;
     }
 
     #ranking h2 {
+      font-size: 28px;
       margin-bottom: 20px;
     }
 
-    #rankingList {
-      text-align: left;
-      font-size: 20px;
-      line-height: 2;
+    .ranking-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 8px;
     }
+
+    .ranking-table th {
+      background-color: #333333;
+      color: #ffffff;
+      padding: 12px;
+      font-size: 18px;
+    }
+
+    .ranking-table td {
+      padding: 12px;
+      border-bottom: 1px solid #dddddd;
+      font-size: 18px;
+    }
+
+    .ranking-rank {
+      width: 20%;
+      text-align: center;
+    }
+
+    .ranking-name {
+      width: 50%;
+      text-align: center;
+    }
+
+    .ranking-score {
+      width: 30%;
+      text-align: center;
+      font-weight: bold;
+    }
+
+
+    /* 1位 */
+    .rank-1 {
+      background-color: #ffe98a;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    /* 2位 */
+    .rank-2 {
+      background-color: #e5e5e5;
+      font-weight: bold;
+    }
+
+    /* 3位 */
+    .rank-3 {
+      background-color: #f4c28b;
+      font-weight: bold;
+    }
+
 
     .back {
       display: inline-block;
@@ -91,8 +162,30 @@
     .back:hover {
       opacity: 0.8;
     }
+
+
+    /* スマホ用 */
+    @media (max-width: 600px) {
+
+      .game-area {
+        padding: 25px 15px;
+      }
+
+      .player-name input {
+        width: 160px;
+      }
+
+      .ranking-table th,
+      .ranking-table td {
+        padding: 10px 5px;
+        font-size: 16px;
+      }
+
+    }
+
   </style>
 </head>
+
 
 <body>
 
@@ -110,14 +203,23 @@
         スコア：<span id="score">0</span>
       </div>
 
+
+      <!-- 名前入力 -->
+
       <div class="player-name">
+
         名前：
+
         <input
           type="text"
           id="playerName"
           maxlength="12"
           placeholder="名前を入力">
+
       </div>
+
+
+      <!-- ゲームボタン -->
 
       <button id="startButton" onclick="startGame()">
         スタート！
@@ -129,19 +231,44 @@
         クリック！
       </button>
 
+
       <div id="message"></div>
+
+
+      <!-- ランキング -->
 
       <div id="ranking">
 
         <h2>🏆 ランキング</h2>
 
-        <ol id="rankingList">
-          <li>読み込み中...</li>
-        </ol>
+        <table class="ranking-table">
+
+          <thead>
+
+            <tr>
+              <th>順位</th>
+              <th>名前</th>
+              <th>スコア</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="rankingBody">
+
+            <tr>
+              <td colspan="3">
+                読み込み中...
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
 
       </div>
 
     </div>
+
 
     <a class="back" href="index.html">
       ← ゲーム一覧に戻る
@@ -150,23 +277,30 @@
   </main>
 
 
+
   <!-- Supabase -->
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
   <script>
 
     // ========================================
-    // Supabaseの設定
+    // Supabase
     // ========================================
 
-    const SUPABASE_URL = "https://vyvbgeqcnrouwpmjwzph.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_CEACy8FVXvk1IVVh5QtSCA_jiNLwHTT";
+    const SUPABASE_URL =
+      "https://vyvbgeqcnrouwpmjwzph.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_CEACy8FVXvk1IVVh5QtSCA_jiNLwHTT";
+
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
       SUPABASE_KEY
     );
+
 
 
     // ========================================
@@ -178,99 +312,145 @@
     let timer;
 
 
+
     function startGame() {
 
-      
- 　　　 const playerName =
-   　　　 document.getElementById("playerName").value.trim();
+      const playerName =
+        document.getElementById("playerName").value.trim();
 
-　　　  if (playerName === "") {
 
-　　　    document.getElementById("message").textContent =
-    　　　  "名前を入力してください！";
+      // 名前が空欄ならゲームを開始しない
 
-  　　  return;
-  }
+      if (playerName === "") {
+
+        document.getElementById("message").textContent =
+          "名前を入力してください！";
+
+        return;
+      }
+
 
       score = 0;
       time = 10;
 
-      document.getElementById("score").textContent = score;
-      document.getElementById("time").textContent = time;
 
-      document.getElementById("startButton").disabled = true;
-      document.getElementById("clickButton").disabled = false;
+      document.getElementById("score").textContent =
+        score;
 
-      document.getElementById("message").textContent = "";
+      document.getElementById("time").textContent =
+        time;
+
+
+      document.getElementById("startButton").disabled =
+        true;
+
+      document.getElementById("clickButton").disabled =
+        false;
+
+
+      document.getElementById("message").textContent =
+        "";
+
 
       timer = setInterval(function() {
 
         time = time - 1;
 
-        document.getElementById("time").textContent = time;
+        document.getElementById("time").textContent =
+          time;
+
 
         if (time <= 0) {
+
           endGame();
+
         }
 
       }, 1000);
+
     }
+
 
 
     function addScore() {
 
       score = score + 1;
 
-      document.getElementById("score").textContent = score;
+      document.getElementById("score").textContent =
+        score;
+
     }
+
 
 
     function endGame() {
 
       clearInterval(timer);
 
-      document.getElementById("clickButton").disabled = true;
-      document.getElementById("startButton").disabled = false;
+
+      document.getElementById("clickButton").disabled =
+        true;
+
+      document.getElementById("startButton").disabled =
+        false;
+
 
       document.getElementById("message").textContent =
         "ゲーム終了！ スコアは " + score + " でした！";
 
+
       saveScore();
+
     }
 
 
+
     // ========================================
-    // スコアをSupabaseに保存
+    // スコア保存
     // ========================================
 
     async function saveScore() {
+
+      const playerName =
+        document.getElementById("playerName").value.trim();
+
 
       const { error } = await supabaseClient
         .from("game01_scores")
         .insert([
           {
-            player_name: document.getElementById("playerName").value,
+            player_name: playerName,
             score: score
           }
         ]);
 
+
       if (error) {
 
-        console.log("スコア保存エラー:", error);
+        console.log(
+          "スコア保存エラー:",
+          error
+        );
 
       } else {
 
-        console.log("スコアを保存しました！");
+        console.log(
+          "スコアを保存しました！"
+        );
 
-        // 保存後にランキングを更新
+
+        // 保存後ランキング更新
+
         loadRanking();
+
       }
 
     }
 
 
+
     // ========================================
-    // ランキングをSupabaseから取得
+    // ランキング取得
     // ========================================
 
     async function loadRanking() {
@@ -281,41 +461,161 @@
         .order("score", { ascending: false })
         .limit(10);
 
+
       if (error) {
 
-        console.log("ランキング取得エラー:", error);
+        console.log(
+          "ランキング取得エラー:",
+          error
+        );
 
         return;
+
       }
 
-      const rankingList =
-        document.getElementById("rankingList");
 
-      rankingList.innerHTML = "";
+      const rankingBody =
+        document.getElementById("rankingBody");
 
 
-      data.forEach(function(item) {
+      rankingBody.innerHTML = "";
 
-        const li =
-          document.createElement("li");
 
-        li.textContent =
-          item.player_name + "　" + item.score + "点";
 
-        rankingList.appendChild(li);
+      // ========================================
+      // ランキングを1行ずつ作成
+      // ========================================
+
+      data.forEach(function(item, index) {
+
+        const rank =
+          index + 1;
+
+
+        const row =
+          document.createElement("tr");
+
+
+        // 1〜3位の色を変更
+
+        if (rank === 1) {
+
+          row.classList.add("rank-1");
+
+        } else if (rank === 2) {
+
+          row.classList.add("rank-2");
+
+        } else if (rank === 3) {
+
+          row.classList.add("rank-3");
+
+        }
+
+
+
+        // 順位
+
+        const rankCell =
+          document.createElement("td");
+
+
+        rankCell.classList.add(
+          "ranking-rank"
+        );
+
+
+        if (rank === 1) {
+
+          rankCell.textContent =
+            "🥇 1";
+
+        } else if (rank === 2) {
+
+          rankCell.textContent =
+            "🥈 2";
+
+        } else if (rank === 3) {
+
+          rankCell.textContent =
+            "🥉 3";
+
+        } else {
+
+          rankCell.textContent =
+            rank;
+
+        }
+
+
+
+        // 名前
+
+        const nameCell =
+          document.createElement("td");
+
+
+        nameCell.classList.add(
+          "ranking-name"
+        );
+
+
+        nameCell.textContent =
+          item.player_name;
+
+
+
+        // スコア
+
+        const scoreCell =
+          document.createElement("td");
+
+
+        scoreCell.classList.add(
+          "ranking-score"
+        );
+
+
+        scoreCell.textContent =
+          item.score + "点";
+
+
+
+        // 行に追加
+
+        row.appendChild(
+          rankCell
+        );
+
+        row.appendChild(
+          nameCell
+        );
+
+        row.appendChild(
+          scoreCell
+        );
+
+
+        // テーブルに追加
+
+        rankingBody.appendChild(
+          row
+        );
 
       });
 
     }
 
 
+
     // ========================================
-    // ページを開いたときランキングを表示
+    // ページを開いたときランキング取得
     // ========================================
 
     loadRanking();
 
   </script>
+
 
 </body>
 

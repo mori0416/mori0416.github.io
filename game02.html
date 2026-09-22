@@ -8,6 +8,7 @@
   <title>Game 02 - Mori's Game Site</title>
 
   <style>
+
     body {
       margin: 0;
       padding: 0;
@@ -33,8 +34,14 @@
 
     .info {
       font-size: 24px;
+      line-height: 1.6;
       margin-bottom: 15px;
     }
+
+
+    /* ========================================
+       ゲーム画面
+       ======================================== */
 
     #gameArea {
       position: relative;
@@ -54,7 +61,9 @@
     }
 
 
-    /* プレイヤー */
+    /* ========================================
+       プレイヤー
+       ======================================== */
 
     #player {
       position: absolute;
@@ -71,7 +80,9 @@
     }
 
 
-    /* 飛んでくる球 */
+    /* ========================================
+       飛んでくる球
+       ======================================== */
 
     .ball {
       position: absolute;
@@ -85,7 +96,9 @@
     }
 
 
-    /* スタートボタン */
+    /* ========================================
+       スタートボタン
+       ======================================== */
 
     #startButton {
       font-size: 22px;
@@ -97,8 +110,15 @@
       cursor: pointer;
     }
 
+    #startButton:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
 
-    /* 操作ボタン */
+
+    /* ========================================
+       操作ボタン
+       ======================================== */
 
     .controls {
       margin-top: 20px;
@@ -122,6 +142,10 @@
     }
 
 
+    /* ========================================
+       メッセージ
+       ======================================== */
+
     #message {
       min-height: 35px;
 
@@ -131,6 +155,10 @@
       font-weight: bold;
     }
 
+
+    /* ========================================
+       戻るボタン
+       ======================================== */
 
     .back {
       display: inline-block;
@@ -152,7 +180,9 @@
     }
 
 
-    /* スマホ */
+    /* ========================================
+       スマホ
+       ======================================== */
 
     @media (max-width: 600px) {
 
@@ -162,6 +192,10 @@
 
       #gameArea {
         height: 400px;
+      }
+
+      .info {
+        font-size: 20px;
       }
 
       .moveButton {
@@ -186,11 +220,26 @@
     </p>
 
 
+    <!-- ========================================
+         生存時間・スコア
+         ======================================== -->
+
     <div class="info">
+
       生存時間：
       <span id="time">0.0</span> 秒
+
+      <br>
+
+      スコア：
+      <span id="score">0</span> 点
+
     </div>
 
+
+    <!-- ========================================
+         スタート
+         ======================================== -->
 
     <button
       id="startButton"
@@ -201,6 +250,10 @@
     </button>
 
 
+    <!-- ========================================
+         ゲーム画面
+         ======================================== -->
+
     <div id="gameArea">
 
       <div id="player"></div>
@@ -208,7 +261,9 @@
     </div>
 
 
-    <!-- 操作ボタン -->
+    <!-- ========================================
+         操作ボタン
+         ======================================== -->
 
     <div class="controls">
 
@@ -235,6 +290,7 @@
 
         </button>
 
+
         <button
           class="moveButton"
           id="downButton">
@@ -242,6 +298,7 @@
           ↓
 
         </button>
+
 
         <button
           class="moveButton"
@@ -302,7 +359,6 @@
     let animationId;
 
 
-
     // ========================================
     // ゲーム開始
     // ========================================
@@ -320,51 +376,75 @@
       balls = [];
 
 
+      // 移動状態をリセット
+
+      moveLeft = false;
+      moveRight = false;
+      moveUp = false;
+      moveDown = false;
+
+
       gameRunning = true;
 
 
       document.getElementById("message").textContent =
         "";
 
+
       document.getElementById("startButton").disabled =
         true;
+
 
       document.getElementById("time").textContent =
         "0.0";
 
 
+      document.getElementById("score").textContent =
+        "0";
+
+
+      // ========================================
       // プレイヤーを中央に配置
+      // ========================================
 
       playerX =
-        (gameArea.clientWidth - player.offsetWidth) / 2;
+        (gameArea.clientWidth -
+          player.offsetWidth) / 2;
+
 
       playerY =
-        (gameArea.clientHeight - player.offsetHeight) / 2;
+        (gameArea.clientHeight -
+          player.offsetHeight) / 2;
 
 
       player.style.left =
         playerX + "px";
 
+
       player.style.top =
         playerY + "px";
 
 
+      // 開始時間
+
       startTime =
         performance.now();
+
 
       lastBallTime =
         startTime;
 
 
       animationId =
-        requestAnimationFrame(gameLoop);
+        requestAnimationFrame(
+          gameLoop
+        );
 
     }
 
 
-
     // ========================================
-    // メインループ
+    // メインゲームループ
     // ========================================
 
     function gameLoop(currentTime) {
@@ -374,7 +454,9 @@
       }
 
 
+      // ========================================
       // 生存時間
+      // ========================================
 
       const survivalTime =
         (currentTime - startTime) / 1000;
@@ -383,6 +465,21 @@
       document.getElementById("time").textContent =
         survivalTime.toFixed(1);
 
+
+      // ========================================
+      // スコア
+      //
+      // 1秒 = 10点
+      // ========================================
+
+      const score =
+        Math.floor(
+          survivalTime * 10
+        );
+
+
+      document.getElementById("score").textContent =
+        score;
 
 
       // ========================================
@@ -393,27 +490,45 @@
 
 
       if (moveLeft) {
-        playerX -= playerSpeed;
+
+        playerX -=
+          playerSpeed;
+
       }
+
 
       if (moveRight) {
-        playerX += playerSpeed;
+
+        playerX +=
+          playerSpeed;
+
       }
+
 
       if (moveUp) {
-        playerY -= playerSpeed;
+
+        playerY -=
+          playerSpeed;
+
       }
+
 
       if (moveDown) {
-        playerY += playerSpeed;
+
+        playerY +=
+          playerSpeed;
+
       }
 
 
-      // 画面外に出ないようにする
+      // ========================================
+      // プレイヤーが画面外へ出ないようにする
+      // ========================================
 
       const maxPlayerX =
         gameArea.clientWidth -
         player.offsetWidth;
+
 
       const maxPlayerY =
         gameArea.clientHeight -
@@ -421,32 +536,47 @@
 
 
       if (playerX < 0) {
+
         playerX = 0;
+
       }
+
 
       if (playerX > maxPlayerX) {
-        playerX = maxPlayerX;
+
+        playerX =
+          maxPlayerX;
+
       }
+
 
       if (playerY < 0) {
+
         playerY = 0;
+
       }
 
+
       if (playerY > maxPlayerY) {
-        playerY = maxPlayerY;
+
+        playerY =
+          maxPlayerY;
+
       }
 
 
       player.style.left =
         playerX + "px";
 
+
       player.style.top =
         playerY + "px";
 
 
-
       // ========================================
       // 球を作る
+      //
+      // 時間が経つほど出現間隔が短くなる
       // ========================================
 
       const ballInterval =
@@ -465,11 +595,11 @@
           survivalTime
         );
 
+
         lastBallTime =
           currentTime;
 
       }
-
 
 
       // ========================================
@@ -489,6 +619,7 @@
         ballData.x +=
           ballData.vx;
 
+
         ballData.y +=
           ballData.vy;
 
@@ -496,12 +627,14 @@
         ballData.element.style.left =
           ballData.x + "px";
 
+
         ballData.element.style.top =
           ballData.y + "px";
 
 
-
+        // ========================================
         // 当たり判定
+        // ========================================
 
         if (
           checkCollision(
@@ -519,8 +652,9 @@
         }
 
 
-
+        // ========================================
         // 画面外へ出た球を削除
+        // ========================================
 
         if (
           ballData.x < -60 ||
@@ -532,6 +666,7 @@
         ) {
 
           ballData.element.remove();
+
 
           balls.splice(
             i,
@@ -551,9 +686,11 @@
     }
 
 
-
     // ========================================
-    // 四方から球を作る
+    // 球を作る
+    //
+    // 四方から出現して
+    // 出現時のプレイヤー位置を狙う
     // ========================================
 
     function createBall(survivalTime) {
@@ -574,17 +711,23 @@
 
       const ballSize = 30;
 
+
       const width =
         gameArea.clientWidth;
+
 
       const height =
         gameArea.clientHeight;
 
 
+      // ========================================
+      // 出現方向
+      //
       // 0 = 上
       // 1 = 右
       // 2 = 下
       // 3 = 左
+      // ========================================
 
       const side =
         Math.floor(
@@ -595,24 +738,8 @@
       let x;
       let y;
 
-      let vx = 0;
-      let vy = 0;
 
-
-      // 時間が経つほど速くなる
-
-      const speed =
-        3 +
-        Math.min(
-          survivalTime * 0.06,
-          4
-        );
-
-
-
-      // ========================================
-      // 上から
-      // ========================================
+      // 上
 
       if (side === 0) {
 
@@ -623,17 +750,10 @@
         y =
           -ballSize;
 
-        vx = 0;
-
-        vy = speed;
-
       }
 
 
-
-      // ========================================
-      // 右から
-      // ========================================
+      // 右
 
       if (side === 1) {
 
@@ -644,18 +764,10 @@
           Math.random() *
           (height - ballSize);
 
-        vx =
-          -speed;
-
-        vy = 0;
-
       }
 
 
-
-      // ========================================
-      // 下から
-      // ========================================
+      // 下
 
       if (side === 2) {
 
@@ -666,18 +778,10 @@
         y =
           height;
 
-        vx = 0;
-
-        vy =
-          -speed;
-
       }
 
 
-
-      // ========================================
-      // 左から
-      // ========================================
+      // 左
 
       if (side === 3) {
 
@@ -688,20 +792,95 @@
           Math.random() *
           (height - ballSize);
 
-        vx =
-          speed;
-
-        vy = 0;
-
       }
+
+
+      // ========================================
+      // プレイヤーの中心
+      // ========================================
+
+      const playerCenterX =
+        playerX +
+        player.offsetWidth / 2;
+
+
+      const playerCenterY =
+        playerY +
+        player.offsetHeight / 2;
+
+
+      // ========================================
+      // 球の中心
+      // ========================================
+
+      const ballCenterX =
+        x +
+        ballSize / 2;
+
+
+      const ballCenterY =
+        y +
+        ballSize / 2;
+
+
+      // ========================================
+      // プレイヤー方向を計算
+      // ========================================
+
+      const dx =
+        playerCenterX -
+        ballCenterX;
+
+
+      const dy =
+        playerCenterY -
+        ballCenterY;
+
+
+      const distance =
+        Math.sqrt(
+          dx * dx +
+          dy * dy
+        );
+
+
+      // ========================================
+      // 球の速度
+      //
+      // 時間が経つほど速くなる
+      // ========================================
+
+      const speed =
+        3 +
+        Math.min(
+          survivalTime * 0.06,
+          4
+        );
+
+
+      // ========================================
+      // X・Y方向の速度
+      // ========================================
+
+      const vx =
+        (dx / distance) *
+        speed;
+
+
+      const vy =
+        (dy / distance) *
+        speed;
 
 
       ball.style.left =
         x + "px";
 
+
       ball.style.top =
         y + "px";
 
+
+      // 球を配列に登録
 
       balls.push({
 
@@ -718,7 +897,6 @@
     }
 
 
-
     // ========================================
     // 当たり判定
     // ========================================
@@ -730,6 +908,7 @@
 
       const playerRect =
         playerElement.getBoundingClientRect();
+
 
       const ballRect =
         ballElement.getBoundingClientRect();
@@ -750,7 +929,6 @@
       );
 
     }
-
 
 
     // ========================================
@@ -780,13 +958,26 @@
         false;
 
 
+      const finalScore =
+        Math.floor(
+          survivalTime * 10
+        );
+
+
+      document.getElementById("time").textContent =
+        survivalTime.toFixed(1);
+
+
+      document.getElementById("score").textContent =
+        finalScore;
+
+
       document.getElementById("message").textContent =
-        "ゲームオーバー！ " +
-        survivalTime.toFixed(1) +
-        "秒 生き残りました！";
+        "ゲームオーバー！ スコアは " +
+        finalScore +
+        " 点でした！";
 
     }
-
 
 
     // ========================================
@@ -797,17 +988,27 @@
       "keydown",
       function(event) {
 
-            if (
-      gameRunning &&
-      (
-        event.key === "ArrowLeft" ||
-        event.key === "ArrowRight" ||
-        event.key === "ArrowUp" ||
-        event.key === "ArrowDown"
-      )
-    ) {
-      event.preventDefault();
-    }
+        // ========================================
+        // ゲーム中は矢印キーで
+        // ページをスクロールさせない
+        // ========================================
+
+        if (
+          gameRunning &&
+          (
+            event.key === "ArrowLeft" ||
+            event.key === "ArrowRight" ||
+            event.key === "ArrowUp" ||
+            event.key === "ArrowDown"
+          )
+        ) {
+
+          event.preventDefault();
+
+        }
+
+
+        // 左
 
         if (
           event.key === "ArrowLeft" ||
@@ -815,10 +1016,13 @@
           event.key === "A"
         ) {
 
-          moveLeft = true;
+          moveLeft =
+            true;
 
         }
 
+
+        // 右
 
         if (
           event.key === "ArrowRight" ||
@@ -826,10 +1030,13 @@
           event.key === "D"
         ) {
 
-          moveRight = true;
+          moveRight =
+            true;
 
         }
 
+
+        // 上
 
         if (
           event.key === "ArrowUp" ||
@@ -837,10 +1044,13 @@
           event.key === "W"
         ) {
 
-          moveUp = true;
+          moveUp =
+            true;
 
         }
 
+
+        // 下
 
         if (
           event.key === "ArrowDown" ||
@@ -848,7 +1058,8 @@
           event.key === "S"
         ) {
 
-          moveDown = true;
+          moveDown =
+            true;
 
         }
 
@@ -856,6 +1067,9 @@
     );
 
 
+    // ========================================
+    // キーを離した時
+    // ========================================
 
     document.addEventListener(
       "keyup",
@@ -867,7 +1081,8 @@
           event.key === "A"
         ) {
 
-          moveLeft = false;
+          moveLeft =
+            false;
 
         }
 
@@ -878,7 +1093,8 @@
           event.key === "D"
         ) {
 
-          moveRight = false;
+          moveRight =
+            false;
 
         }
 
@@ -889,7 +1105,8 @@
           event.key === "W"
         ) {
 
-          moveUp = false;
+          moveUp =
+            false;
 
         }
 
@@ -900,7 +1117,8 @@
           event.key === "S"
         ) {
 
-          moveDown = false;
+          moveDown =
+            false;
 
         }
 
@@ -908,15 +1126,17 @@
     );
 
 
-
     // ========================================
-    // 操作ボタン
+    // スマホ・マウス操作ボタン
     // ========================================
 
     setupMoveButton(
       "leftButton",
       function(value) {
-        moveLeft = value;
+
+        moveLeft =
+          value;
+
       }
     );
 
@@ -924,7 +1144,10 @@
     setupMoveButton(
       "rightButton",
       function(value) {
-        moveRight = value;
+
+        moveRight =
+          value;
+
       }
     );
 
@@ -932,7 +1155,10 @@
     setupMoveButton(
       "upButton",
       function(value) {
-        moveUp = value;
+
+        moveUp =
+          value;
+
       }
     );
 
@@ -940,11 +1166,17 @@
     setupMoveButton(
       "downButton",
       function(value) {
-        moveDown = value;
+
+        moveDown =
+          value;
+
       }
     );
 
 
+    // ========================================
+    // 操作ボタン共通処理
+    // ========================================
 
     function setupMoveButton(
       buttonId,
@@ -963,7 +1195,9 @@
 
           event.preventDefault();
 
-          setMovement(true);
+          setMovement(
+            true
+          );
 
         }
       );
@@ -973,7 +1207,9 @@
         "pointerup",
         function() {
 
-          setMovement(false);
+          setMovement(
+            false
+          );
 
         }
       );
@@ -983,7 +1219,9 @@
         "pointerleave",
         function() {
 
-          setMovement(false);
+          setMovement(
+            false
+          );
 
         }
       );
@@ -993,7 +1231,9 @@
         "pointercancel",
         function() {
 
-          setMovement(false);
+          setMovement(
+            false
+          );
 
         }
       );

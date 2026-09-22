@@ -63,7 +63,7 @@
       height: 50px;
 
       left: 325px;
-      bottom: 20px;
+      top: 200px;
 
       background-color: #3498db;
 
@@ -78,8 +78,6 @@
 
       width: 30px;
       height: 30px;
-
-      top: -40px;
 
       background-color: #e74c3c;
 
@@ -100,19 +98,23 @@
     }
 
 
-    /* 左右操作 */
+    /* 操作ボタン */
 
     .controls {
       margin-top: 20px;
     }
 
+    .control-row {
+      margin: 5px 0;
+    }
+
     .moveButton {
-      width: 120px;
-      height: 60px;
+      width: 80px;
+      height: 55px;
 
-      margin: 5px;
+      margin: 3px;
 
-      font-size: 28px;
+      font-size: 26px;
 
       cursor: pointer;
 
@@ -163,7 +165,8 @@
       }
 
       .moveButton {
-        width: 100px;
+        width: 70px;
+        height: 50px;
       }
 
     }
@@ -179,7 +182,7 @@
     <h1>Game 02</h1>
 
     <p class="description">
-      飛んでくる球を避けよう！
+      四方から飛んでくる球を避けよう！
     </p>
 
 
@@ -205,23 +208,50 @@
     </div>
 
 
+    <!-- 操作ボタン -->
+
     <div class="controls">
 
-      <button
-        class="moveButton"
-        id="leftButton">
+      <div class="control-row">
 
-        ←
+        <button
+          class="moveButton"
+          id="upButton">
 
-      </button>
+          ↑
 
-      <button
-        class="moveButton"
-        id="rightButton">
+        </button>
 
-        →
+      </div>
 
-      </button>
+
+      <div class="control-row">
+
+        <button
+          class="moveButton"
+          id="leftButton">
+
+          ←
+
+        </button>
+
+        <button
+          class="moveButton"
+          id="downButton">
+
+          ↓
+
+        </button>
+
+        <button
+          class="moveButton"
+          id="rightButton">
+
+          →
+
+        </button>
+
+      </div>
 
     </div>
 
@@ -244,7 +274,7 @@
   <script>
 
     // ========================================
-    // ゲームの基本設定
+    // 基本設定
     // ========================================
 
     const gameArea =
@@ -257,14 +287,16 @@
     let gameRunning = false;
 
     let playerX = 0;
+    let playerY = 0;
 
     let moveLeft = false;
     let moveRight = false;
+    let moveUp = false;
+    let moveDown = false;
 
     let balls = [];
 
     let startTime = 0;
-
     let lastBallTime = 0;
 
     let animationId;
@@ -277,7 +309,7 @@
 
     function startGame() {
 
-      // 前の球を削除
+      // 前の球を全部削除
 
       balls.forEach(function(ballData) {
 
@@ -294,28 +326,31 @@
       document.getElementById("message").textContent =
         "";
 
-
       document.getElementById("startButton").disabled =
         true;
-
 
       document.getElementById("time").textContent =
         "0.0";
 
 
-      // プレイヤーを中央へ
+      // プレイヤーを中央に配置
 
       playerX =
         (gameArea.clientWidth - player.offsetWidth) / 2;
+
+      playerY =
+        (gameArea.clientHeight - player.offsetHeight) / 2;
 
 
       player.style.left =
         playerX + "px";
 
+      player.style.top =
+        playerY + "px";
+
 
       startTime =
         performance.now();
-
 
       lastBallTime =
         startTime;
@@ -358,47 +393,55 @@
 
 
       if (moveLeft) {
-
-        playerX =
-          playerX - playerSpeed;
-
+        playerX -= playerSpeed;
       }
-
 
       if (moveRight) {
+        playerX += playerSpeed;
+      }
 
-        playerX =
-          playerX + playerSpeed;
+      if (moveUp) {
+        playerY -= playerSpeed;
+      }
 
+      if (moveDown) {
+        playerY += playerSpeed;
       }
 
 
-      // 左端より外へ行かない
-
-      if (playerX < 0) {
-
-        playerX = 0;
-
-      }
-
-
-      // 右端より外へ行かない
+      // 画面外に出ないようにする
 
       const maxPlayerX =
         gameArea.clientWidth -
         player.offsetWidth;
 
+      const maxPlayerY =
+        gameArea.clientHeight -
+        player.offsetHeight;
+
+
+      if (playerX < 0) {
+        playerX = 0;
+      }
 
       if (playerX > maxPlayerX) {
+        playerX = maxPlayerX;
+      }
 
-        playerX =
-          maxPlayerX;
+      if (playerY < 0) {
+        playerY = 0;
+      }
 
+      if (playerY > maxPlayerY) {
+        playerY = maxPlayerY;
       }
 
 
       player.style.left =
         playerX + "px";
+
+      player.style.top =
+        playerY + "px";
 
 
 
@@ -406,13 +449,10 @@
       // 球を作る
       // ========================================
 
-      // 最初は約0.8秒に1個
-      // 徐々に間隔が短くなる
-
       const ballInterval =
         Math.max(
           250,
-          800 - survivalTime * 15
+          850 - survivalTime * 15
         );
 
 
@@ -446,10 +486,15 @@
           balls[i];
 
 
-        ballData.y =
-          ballData.y +
-          ballData.speed;
+        ballData.x +=
+          ballData.vx;
 
+        ballData.y +=
+          ballData.vy;
+
+
+        ballData.element.style.left =
+          ballData.x + "px";
 
         ballData.element.style.top =
           ballData.y + "px";
@@ -475,11 +520,15 @@
 
 
 
-        // 下まで行った球を削除
+        // 画面外へ出た球を削除
 
         if (
+          ballData.x < -60 ||
+          ballData.x >
+            gameArea.clientWidth + 60 ||
+          ballData.y < -60 ||
           ballData.y >
-          gameArea.clientHeight
+            gameArea.clientHeight + 60
         ) {
 
           ballData.element.remove();
@@ -494,7 +543,6 @@
       }
 
 
-
       animationId =
         requestAnimationFrame(
           gameLoop
@@ -505,7 +553,7 @@
 
 
     // ========================================
-    // 球を作る
+    // 四方から球を作る
     // ========================================
 
     function createBall(survivalTime) {
@@ -524,33 +572,146 @@
       );
 
 
-      const maxX =
-        gameArea.clientWidth - 30;
+      const ballSize = 30;
+
+      const width =
+        gameArea.clientWidth;
+
+      const height =
+        gameArea.clientHeight;
 
 
-      const x =
-        Math.random() * maxX;
+      // 0 = 上
+      // 1 = 右
+      // 2 = 下
+      // 3 = 左
+
+      const side =
+        Math.floor(
+          Math.random() * 4
+        );
+
+
+      let x;
+      let y;
+
+      let vx = 0;
+      let vy = 0;
+
+
+      // 時間が経つほど速くなる
+
+      const speed =
+        3 +
+        Math.min(
+          survivalTime * 0.06,
+          4
+        );
+
+
+
+      // ========================================
+      // 上から
+      // ========================================
+
+      if (side === 0) {
+
+        x =
+          Math.random() *
+          (width - ballSize);
+
+        y =
+          -ballSize;
+
+        vx = 0;
+
+        vy = speed;
+
+      }
+
+
+
+      // ========================================
+      // 右から
+      // ========================================
+
+      if (side === 1) {
+
+        x =
+          width;
+
+        y =
+          Math.random() *
+          (height - ballSize);
+
+        vx =
+          -speed;
+
+        vy = 0;
+
+      }
+
+
+
+      // ========================================
+      // 下から
+      // ========================================
+
+      if (side === 2) {
+
+        x =
+          Math.random() *
+          (width - ballSize);
+
+        y =
+          height;
+
+        vx = 0;
+
+        vy =
+          -speed;
+
+      }
+
+
+
+      // ========================================
+      // 左から
+      // ========================================
+
+      if (side === 3) {
+
+        x =
+          -ballSize;
+
+        y =
+          Math.random() *
+          (height - ballSize);
+
+        vx =
+          speed;
+
+        vy = 0;
+
+      }
 
 
       ball.style.left =
         x + "px";
 
-
-      const speed =
-        3 +
-        Math.min(
-          survivalTime * 0.08,
-          5
-        );
+      ball.style.top =
+        y + "px";
 
 
       balls.push({
 
         element: ball,
 
-        y: -40,
+        x: x,
+        y: y,
 
-        speed: speed
+        vx: vx,
+        vy: vy
 
       });
 
@@ -570,23 +731,22 @@
       const playerRect =
         playerElement.getBoundingClientRect();
 
-
       const ballRect =
         ballElement.getBoundingClientRect();
 
 
       return !(
         playerRect.right <
-        ballRect.left ||
+          ballRect.left ||
 
         playerRect.left >
-        ballRect.right ||
+          ballRect.right ||
 
         playerRect.bottom <
-        ballRect.top ||
+          ballRect.top ||
 
         playerRect.top >
-        ballRect.bottom
+          ballRect.bottom
       );
 
     }
@@ -610,11 +770,10 @@
       );
 
 
-      moveLeft =
-        false;
-
-      moveRight =
-        false;
+      moveLeft = false;
+      moveRight = false;
+      moveUp = false;
+      moveDown = false;
 
 
       document.getElementById("startButton").disabled =
@@ -644,8 +803,7 @@
           event.key === "A"
         ) {
 
-          moveLeft =
-            true;
+          moveLeft = true;
 
         }
 
@@ -656,13 +814,35 @@
           event.key === "D"
         ) {
 
-          moveRight =
-            true;
+          moveRight = true;
+
+        }
+
+
+        if (
+          event.key === "ArrowUp" ||
+          event.key === "w" ||
+          event.key === "W"
+        ) {
+
+          moveUp = true;
+
+        }
+
+
+        if (
+          event.key === "ArrowDown" ||
+          event.key === "s" ||
+          event.key === "S"
+        ) {
+
+          moveDown = true;
 
         }
 
       }
     );
+
 
 
     document.addEventListener(
@@ -675,8 +855,7 @@
           event.key === "A"
         ) {
 
-          moveLeft =
-            false;
+          moveLeft = false;
 
         }
 
@@ -687,8 +866,29 @@
           event.key === "D"
         ) {
 
-          moveRight =
-            false;
+          moveRight = false;
+
+        }
+
+
+        if (
+          event.key === "ArrowUp" ||
+          event.key === "w" ||
+          event.key === "W"
+        ) {
+
+          moveUp = false;
+
+        }
+
+
+        if (
+          event.key === "ArrowDown" ||
+          event.key === "s" ||
+          event.key === "S"
+        ) {
+
+          moveDown = false;
 
         }
 
@@ -698,87 +898,95 @@
 
 
     // ========================================
-    // スマホ・マウス操作
+    // 操作ボタン
     // ========================================
 
-    const leftButton =
-      document.getElementById(
-        "leftButton"
+    setupMoveButton(
+      "leftButton",
+      function(value) {
+        moveLeft = value;
+      }
+    );
+
+
+    setupMoveButton(
+      "rightButton",
+      function(value) {
+        moveRight = value;
+      }
+    );
+
+
+    setupMoveButton(
+      "upButton",
+      function(value) {
+        moveUp = value;
+      }
+    );
+
+
+    setupMoveButton(
+      "downButton",
+      function(value) {
+        moveDown = value;
+      }
+    );
+
+
+
+    function setupMoveButton(
+      buttonId,
+      setMovement
+    ) {
+
+      const button =
+        document.getElementById(
+          buttonId
+        );
+
+
+      button.addEventListener(
+        "pointerdown",
+        function(event) {
+
+          event.preventDefault();
+
+          setMovement(true);
+
+        }
       );
 
 
-    const rightButton =
-      document.getElementById(
-        "rightButton"
+      button.addEventListener(
+        "pointerup",
+        function() {
+
+          setMovement(false);
+
+        }
       );
 
 
+      button.addEventListener(
+        "pointerleave",
+        function() {
 
-    leftButton.addEventListener(
-      "pointerdown",
-      function() {
+          setMovement(false);
 
-        moveLeft =
-          true;
-
-      }
-    );
+        }
+      );
 
 
-    leftButton.addEventListener(
-      "pointerup",
-      function() {
+      button.addEventListener(
+        "pointercancel",
+        function() {
 
-        moveLeft =
-          false;
+          setMovement(false);
 
-      }
-    );
+        }
+      );
 
-
-    leftButton.addEventListener(
-      "pointerleave",
-      function() {
-
-        moveLeft =
-          false;
-
-      }
-    );
-
-
-
-    rightButton.addEventListener(
-      "pointerdown",
-      function() {
-
-        moveRight =
-          true;
-
-      }
-    );
-
-
-    rightButton.addEventListener(
-      "pointerup",
-      function() {
-
-        moveRight =
-          false;
-
-      }
-    );
-
-
-    rightButton.addEventListener(
-      "pointerleave",
-      function() {
-
-        moveRight =
-          false;
-
-      }
-    );
+    }
 
   </script>
 

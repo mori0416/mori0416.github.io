@@ -40,6 +40,28 @@
 
 
     /* ========================================
+       名前入力
+       ======================================== */
+
+    .player-name {
+      margin: 15px 0;
+      font-size: 20px;
+    }
+
+    .player-name input {
+      width: 200px;
+      padding: 10px;
+      font-size: 18px;
+      border: 1px solid #aaaaaa;
+      border-radius: 5px;
+    }
+
+    .player-name input:disabled {
+      background-color: #eeeeee;
+    }
+
+
+    /* ========================================
        ゲーム画面
        ======================================== */
 
@@ -105,7 +127,7 @@
 
       padding: 12px 30px;
 
-      margin: 20px 0;
+      margin: 10px 0 20px;
 
       cursor: pointer;
     }
@@ -157,13 +179,100 @@
 
 
     /* ========================================
+       ランキング
+       ======================================== */
+
+    #ranking {
+      max-width: 650px;
+
+      margin: 40px auto 0;
+
+      padding-top: 20px;
+
+      border-top: 2px solid #dddddd;
+    }
+
+    #ranking h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .ranking-table {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      overflow: hidden;
+
+      border-radius: 8px;
+    }
+
+    .ranking-table th {
+      padding: 12px;
+
+      background-color: #333333;
+      color: #ffffff;
+
+      font-size: 18px;
+    }
+
+    .ranking-table td {
+      padding: 12px;
+
+      border-bottom: 1px solid #dddddd;
+
+      font-size: 18px;
+    }
+
+    .ranking-rank {
+      width: 20%;
+      text-align: center;
+    }
+
+    .ranking-name {
+      width: 50%;
+      text-align: center;
+    }
+
+    .ranking-score {
+      width: 30%;
+      text-align: center;
+      font-weight: bold;
+    }
+
+
+    /* 1位 */
+
+    .rank-1 {
+      background-color: #ffe98a;
+      font-weight: bold;
+    }
+
+
+    /* 2位 */
+
+    .rank-2 {
+      background-color: #e5e5e5;
+      font-weight: bold;
+    }
+
+
+    /* 3位 */
+
+    .rank-3 {
+      background-color: #f4c28b;
+      font-weight: bold;
+    }
+
+
+    /* ========================================
        戻るボタン
        ======================================== */
 
     .back {
       display: inline-block;
 
-      margin-top: 25px;
+      margin-top: 30px;
 
       padding: 10px 20px;
 
@@ -198,9 +307,19 @@
         font-size: 20px;
       }
 
+      .player-name input {
+        width: 160px;
+      }
+
       .moveButton {
         width: 70px;
         height: 50px;
+      }
+
+      .ranking-table th,
+      .ranking-table td {
+        padding: 10px 5px;
+        font-size: 16px;
       }
 
     }
@@ -233,6 +352,23 @@
 
       スコア：
       <span id="score">0</span> 点
+
+    </div>
+
+
+    <!-- ========================================
+         名前入力
+         ======================================== -->
+
+    <div class="player-name">
+
+      名前：
+
+      <input
+        type="text"
+        id="playerName"
+        maxlength="12"
+        placeholder="名前を入力">
 
     </div>
 
@@ -316,6 +452,48 @@
     <div id="message"></div>
 
 
+    <!-- ========================================
+         ランキング
+         ======================================== -->
+
+    <div id="ranking">
+
+      <h2>🏆 ランキング</h2>
+
+      <table class="ranking-table">
+
+        <thead>
+
+          <tr>
+
+            <th>順位</th>
+
+            <th>名前</th>
+
+            <th>スコア</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody id="rankingBody">
+
+          <tr>
+
+            <td colspan="3">
+              読み込み中...
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
     <a
       class="back"
       href="index.html">
@@ -328,14 +506,41 @@
 
 
 
+  <!-- ========================================
+       Supabase
+       ======================================== -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
   <script>
 
     // ========================================
-    // 基本設定
+    // Supabase設定
+    // ========================================
+
+    const SUPABASE_URL =
+      "https://vyvbgeqcnrouwpmjwzph.supabase.co";
+
+
+    const SUPABASE_KEY =
+      "sb_publishable_CEACy8FVXvk1IVVh5QtSCA_jiNLwHTT";
+
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    // ========================================
+    // ゲーム基本設定
     // ========================================
 
     const gameArea =
       document.getElementById("gameArea");
+
 
     const player =
       document.getElementById("player");
@@ -358,12 +563,41 @@
 
     let animationId;
 
+    let currentPlayerName = "";
+
 
     // ========================================
     // ゲーム開始
     // ========================================
 
     function startGame() {
+
+      // 名前を取得
+
+      const playerName =
+        document
+          .getElementById("playerName")
+          .value
+          .trim();
+
+
+      // 名前が空欄なら開始しない
+
+      if (playerName === "") {
+
+        document.getElementById("message").textContent =
+          "名前を入力してください！";
+
+        return;
+
+      }
+
+
+      // 今回のプレイヤー名を保存
+
+      currentPlayerName =
+        playerName;
+
 
       // 前の球を全部削除
 
@@ -373,10 +607,11 @@
 
       });
 
+
       balls = [];
 
 
-      // 移動状態をリセット
+      // 移動状態リセット
 
       moveLeft = false;
       moveRight = false;
@@ -384,7 +619,8 @@
       moveDown = false;
 
 
-      gameRunning = true;
+      gameRunning =
+        true;
 
 
       document.getElementById("message").textContent =
@@ -392,6 +628,12 @@
 
 
       document.getElementById("startButton").disabled =
+        true;
+
+
+      // ゲーム中に名前を変更できないようにする
+
+      document.getElementById("playerName").disabled =
         true;
 
 
@@ -404,17 +646,21 @@
 
 
       // ========================================
-      // プレイヤーを中央に配置
+      // プレイヤーを中央へ
       // ========================================
 
       playerX =
-        (gameArea.clientWidth -
-          player.offsetWidth) / 2;
+        (
+          gameArea.clientWidth -
+          player.offsetWidth
+        ) / 2;
 
 
       playerY =
-        (gameArea.clientHeight -
-          player.offsetHeight) / 2;
+        (
+          gameArea.clientHeight -
+          player.offsetHeight
+        ) / 2;
 
 
       player.style.left =
@@ -450,7 +696,9 @@
     function gameLoop(currentTime) {
 
       if (!gameRunning) {
+
         return;
+
       }
 
 
@@ -459,7 +707,10 @@
       // ========================================
 
       const survivalTime =
-        (currentTime - startTime) / 1000;
+        (
+          currentTime -
+          startTime
+        ) / 1000;
 
 
       document.getElementById("time").textContent =
@@ -486,7 +737,8 @@
       // プレイヤー移動
       // ========================================
 
-      const playerSpeed = 6;
+      const playerSpeed =
+        6;
 
 
       if (moveLeft) {
@@ -522,7 +774,7 @@
 
 
       // ========================================
-      // プレイヤーが画面外へ出ないようにする
+      // 画面外へ出ないようにする
       // ========================================
 
       const maxPlayerX =
@@ -537,7 +789,8 @@
 
       if (playerX < 0) {
 
-        playerX = 0;
+        playerX =
+          0;
 
       }
 
@@ -552,7 +805,8 @@
 
       if (playerY < 0) {
 
-        playerY = 0;
+        playerY =
+          0;
 
       }
 
@@ -575,19 +829,19 @@
 
       // ========================================
       // 球を作る
-      //
-      // 時間が経つほど出現間隔が短くなる
       // ========================================
 
       const ballInterval =
         Math.max(
           250,
-          850 - survivalTime * 15
+          850 -
+          survivalTime * 15
         );
 
 
       if (
-        currentTime - lastBallTime >
+        currentTime -
+        lastBallTime >
         ballInterval
       ) {
 
@@ -607,8 +861,11 @@
       // ========================================
 
       for (
-        let i = balls.length - 1;
+        let i =
+          balls.length - 1;
+
         i >= 0;
+
         i--
       ) {
 
@@ -658,9 +915,12 @@
 
         if (
           ballData.x < -60 ||
+
           ballData.x >
             gameArea.clientWidth + 60 ||
+
           ballData.y < -60 ||
+
           ballData.y >
             gameArea.clientHeight + 60
         ) {
@@ -709,7 +969,8 @@
       );
 
 
-      const ballSize = 30;
+      const ballSize =
+        30;
 
 
       const width =
@@ -721,8 +982,6 @@
 
 
       // ========================================
-      // 出現方向
-      //
       // 0 = 上
       // 1 = 右
       // 2 = 下
@@ -745,7 +1004,11 @@
 
         x =
           Math.random() *
-          (width - ballSize);
+          (
+            width -
+            ballSize
+          );
+
 
         y =
           -ballSize;
@@ -760,9 +1023,13 @@
         x =
           width;
 
+
         y =
           Math.random() *
-          (height - ballSize);
+          (
+            height -
+            ballSize
+          );
 
       }
 
@@ -773,7 +1040,11 @@
 
         x =
           Math.random() *
-          (width - ballSize);
+          (
+            width -
+            ballSize
+          );
+
 
         y =
           height;
@@ -788,9 +1059,13 @@
         x =
           -ballSize;
 
+
         y =
           Math.random() *
-          (height - ballSize);
+          (
+            height -
+            ballSize
+          );
 
       }
 
@@ -824,7 +1099,7 @@
 
 
       // ========================================
-      // プレイヤー方向を計算
+      // プレイヤー方向
       // ========================================
 
       const dx =
@@ -846,8 +1121,6 @@
 
       // ========================================
       // 球の速度
-      //
-      // 時間が経つほど速くなる
       // ========================================
 
       const speed =
@@ -858,18 +1131,18 @@
         );
 
 
-      // ========================================
-      // X・Y方向の速度
-      // ========================================
-
       const vx =
-        (dx / distance) *
-        speed;
+        (
+          dx /
+          distance
+        ) * speed;
 
 
       const vy =
-        (dy / distance) *
-        speed;
+        (
+          dy /
+          distance
+        ) * speed;
 
 
       ball.style.left =
@@ -879,8 +1152,6 @@
       ball.style.top =
         y + "px";
 
-
-      // 球を配列に登録
 
       balls.push({
 
@@ -907,11 +1178,13 @@
     ) {
 
       const playerRect =
-        playerElement.getBoundingClientRect();
+        playerElement
+          .getBoundingClientRect();
 
 
       const ballRect =
-        ballElement.getBoundingClientRect();
+        ballElement
+          .getBoundingClientRect();
 
 
       return !(
@@ -958,6 +1231,10 @@
         false;
 
 
+      document.getElementById("playerName").disabled =
+        false;
+
+
       const finalScore =
         Math.floor(
           survivalTime * 10
@@ -977,6 +1254,291 @@
         finalScore +
         " 点でした！";
 
+
+      // ========================================
+      // Supabaseへスコア保存
+      // ========================================
+
+      saveScore(
+        finalScore
+      );
+
+    }
+
+
+    // ========================================
+    // スコア保存
+    // ========================================
+
+    async function saveScore(
+      finalScore
+    ) {
+
+      const { error } =
+        await supabaseClient
+          .from("game02_scores")
+          .insert([
+            {
+              player_name:
+                currentPlayerName,
+
+              score:
+                finalScore
+            }
+          ]);
+
+
+      if (error) {
+
+        console.log(
+          "スコア保存エラー:",
+          error
+        );
+
+        return;
+
+      }
+
+
+      console.log(
+        "Game 02のスコアを保存しました！"
+      );
+
+
+      // 保存後ランキング更新
+
+      loadRanking();
+
+    }
+
+
+    // ========================================
+    // ランキング取得
+    // ========================================
+
+    async function loadRanking() {
+
+      const { data, error } =
+        await supabaseClient
+          .from("game02_scores")
+          .select(
+            "player_name, score"
+          )
+          .order(
+            "score",
+            {
+              ascending: false
+            }
+          )
+          .limit(
+            10
+          );
+
+
+      if (error) {
+
+        console.log(
+          "ランキング取得エラー:",
+          error
+        );
+
+        return;
+
+      }
+
+
+      const rankingBody =
+        document.getElementById(
+          "rankingBody"
+        );
+
+
+      rankingBody.innerHTML =
+        "";
+
+
+      // データがまだない場合
+
+      if (data.length === 0) {
+
+        const row =
+          document.createElement(
+            "tr"
+          );
+
+
+        const cell =
+          document.createElement(
+            "td"
+          );
+
+
+        cell.colSpan =
+          3;
+
+
+        cell.textContent =
+          "まだスコアがありません。";
+
+
+        row.appendChild(
+          cell
+        );
+
+
+        rankingBody.appendChild(
+          row
+        );
+
+
+        return;
+
+      }
+
+
+      // ========================================
+      // ランキングを作る
+      // ========================================
+
+      data.forEach(
+        function(item, index) {
+
+          const rank =
+            index + 1;
+
+
+          const row =
+            document.createElement(
+              "tr"
+            );
+
+
+          // 上位3人
+
+          if (rank === 1) {
+
+            row.classList.add(
+              "rank-1"
+            );
+
+          } else if (rank === 2) {
+
+            row.classList.add(
+              "rank-2"
+            );
+
+          } else if (rank === 3) {
+
+            row.classList.add(
+              "rank-3"
+            );
+
+          }
+
+
+          // ========================================
+          // 順位
+          // ========================================
+
+          const rankCell =
+            document.createElement(
+              "td"
+            );
+
+
+          rankCell.classList.add(
+            "ranking-rank"
+          );
+
+
+          if (rank === 1) {
+
+            rankCell.textContent =
+              "🥇 1";
+
+          } else if (rank === 2) {
+
+            rankCell.textContent =
+              "🥈 2";
+
+          } else if (rank === 3) {
+
+            rankCell.textContent =
+              "🥉 3";
+
+          } else {
+
+            rankCell.textContent =
+              rank;
+
+          }
+
+
+          // ========================================
+          // 名前
+          // ========================================
+
+          const nameCell =
+            document.createElement(
+              "td"
+            );
+
+
+          nameCell.classList.add(
+            "ranking-name"
+          );
+
+
+          nameCell.textContent =
+            item.player_name;
+
+
+          // ========================================
+          // スコア
+          // ========================================
+
+          const scoreCell =
+            document.createElement(
+              "td"
+            );
+
+
+          scoreCell.classList.add(
+            "ranking-score"
+          );
+
+
+          scoreCell.textContent =
+            item.score +
+            "点";
+
+
+          // ========================================
+          // 行を完成させる
+          // ========================================
+
+          row.appendChild(
+            rankCell
+          );
+
+
+          row.appendChild(
+            nameCell
+          );
+
+
+          row.appendChild(
+            scoreCell
+          );
+
+
+          rankingBody.appendChild(
+            row
+          );
+
+        }
+      );
+
     }
 
 
@@ -988,10 +1550,8 @@
       "keydown",
       function(event) {
 
-        // ========================================
-        // ゲーム中は矢印キーで
-        // ページをスクロールさせない
-        // ========================================
+        // ゲーム中は矢印キーによる
+        // ページスクロールを防ぐ
 
         if (
           gameRunning &&
@@ -1068,7 +1628,7 @@
 
 
     // ========================================
-    // キーを離した時
+    // キーを離したとき
     // ========================================
 
     document.addEventListener(
@@ -1127,7 +1687,7 @@
 
 
     // ========================================
-    // スマホ・マウス操作ボタン
+    // スマホ・マウス操作
     // ========================================
 
     setupMoveButton(
@@ -1195,6 +1755,7 @@
 
           event.preventDefault();
 
+
           setMovement(
             true
           );
@@ -1239,6 +1800,13 @@
       );
 
     }
+
+
+    // ========================================
+    // ページを開いたときランキング取得
+    // ========================================
+
+    loadRanking();
 
   </script>
 

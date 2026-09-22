@@ -110,6 +110,15 @@
         スコア：<span id="score">0</span>
       </div>
 
+      <div class="player-name">
+  　　　名前：
+　　　　  <input
+    　　　　type="text"
+    　　　　id="playerName"
+   　　　　 maxlength="12"
+   　　　　 placeholder="名前を入力">
+　　　　</div>
+
       <button id="startButton" onclick="startGame()">
         スタート！
       </button>
@@ -171,6 +180,18 @@
 
     function startGame() {
 
+      
+ 　　　 const playerName =
+   　　　 document.getElementById("playerName").value.trim();
+
+　　　  if (playerName === "") {
+
+　　　    document.getElementById("message").textContent =
+    　　　  "名前を入力してください！";
+
+  　　  return;
+  }
+
       score = 0;
       time = 10;
 
@@ -228,7 +249,7 @@
         .from("game01_scores")
         .insert([
           {
-            player_name: "Player",
+            player_name: "document.getElementById("playerName").value,
             score: score
           }
         ]);

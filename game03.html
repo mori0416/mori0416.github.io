@@ -29,8 +29,25 @@
 
     .description {
       font-size: 17px;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       line-height: 1.6;
+    }
+
+    /* ==============================
+       名前入力
+       ============================== */
+
+    .name-area {
+      margin-bottom: 15px;
+    }
+
+    #playerName {
+      width: 180px;
+      font-size: 18px;
+      padding: 8px 10px;
+      border: 2px solid #cccccc;
+      border-radius: 6px;
+      text-align: center;
     }
 
     /* ==============================
@@ -55,14 +72,13 @@
       display: flex;
       align-items: center;
       gap: 8px;
-
       font-size: 18px;
       font-weight: bold;
     }
 
     #nextFruit {
-      width: 48px;
-      height: 48px;
+      width: 50px;
+      height: 50px;
 
       display: flex;
       align-items: center;
@@ -110,7 +126,7 @@
     #dangerLine {
       position: absolute;
 
-      top: 105px;
+      top: 120px;
       left: 0;
 
       width: 100%;
@@ -125,7 +141,7 @@
     #dangerText {
       position: absolute;
 
-      top: 82px;
+      top: 96px;
       right: 5px;
 
       color: #e53935;
@@ -139,7 +155,7 @@
     }
 
     /* ==============================
-       落下済みフルーツ
+       物理フルーツ
        ============================== */
 
     .physics-fruit {
@@ -160,7 +176,7 @@
     }
 
     /* ==============================
-       操作中のフルーツ
+       落とす前のフルーツ
        ============================== */
 
     #currentFruit {
@@ -185,10 +201,10 @@
     #guide {
       position: absolute;
 
-      top: 60px;
+      top: 65px;
 
       width: 2px;
-      height: 45px;
+      height: 55px;
 
       background: #aaaaaa;
 
@@ -200,7 +216,7 @@
     }
 
     /* ==============================
-       ゲームオーバー画面
+       GAME OVER
        ============================== */
 
     #gameOverScreen {
@@ -212,7 +228,7 @@
       width: 100%;
       height: 100%;
 
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.92);
 
       z-index: 30;
 
@@ -232,7 +248,13 @@
     #finalScore {
       font-size: 28px;
       font-weight: bold;
-      margin-bottom: 25px;
+      margin-bottom: 10px;
+    }
+
+    #saveMessage {
+      min-height: 25px;
+      margin-bottom: 15px;
+      font-size: 15px;
     }
 
     #restartButton {
@@ -302,16 +324,84 @@
 
     #message {
       min-height: 30px;
-
       margin-top: 12px;
-
       font-size: 18px;
+    }
+
+    /* ==============================
+       ランキング
+       ============================== */
+
+    .ranking {
+      max-width: 430px;
+      margin: 35px auto 0;
+      padding: 20px;
+
+      border: 2px solid #dddddd;
+      border-radius: 10px;
+
+      background: #fafafa;
+    }
+
+    .ranking h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    #rankingList {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ranking-row {
+      display: grid;
+
+      grid-template-columns: 65px 1fr 90px;
+
+      align-items: center;
+
+      padding: 10px 5px;
+
+      border-bottom: 1px solid #dddddd;
+
+      font-size: 17px;
+    }
+
+    .ranking-row:last-child {
+      border-bottom: none;
+    }
+
+    .ranking-position {
+      font-weight: bold;
+    }
+
+    .ranking-name {
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+
+    .ranking-score {
+      text-align: right;
+      font-weight: bold;
+    }
+
+    .rank1 {
+      background: #fff7c2;
+    }
+
+    .rank2 {
+      background: #eeeeee;
+    }
+
+    .rank3 {
+      background: #f6dfcc;
     }
 
     .back {
       display: inline-block;
 
-      margin-top: 20px;
+      margin-top: 25px;
 
       padding: 10px 20px;
 
@@ -351,13 +441,22 @@
       }
 
       #nextFruit {
-        width: 42px;
-        height: 42px;
+        width: 44px;
+        height: 44px;
         font-size: 28px;
       }
 
       .move-button {
         width: 70px;
+      }
+
+      .ranking {
+        padding: 15px 10px;
+      }
+
+      .ranking-row {
+        grid-template-columns: 55px 1fr 75px;
+        font-size: 15px;
       }
     }
   </style>
@@ -376,6 +475,20 @@
     </p>
 
 
+    <!-- 名前 -->
+
+    <div class="name-area">
+
+      <input
+        id="playerName"
+        type="text"
+        maxlength="20"
+        placeholder="名前を入力"
+      >
+
+    </div>
+
+
     <!-- スコア・NEXT -->
 
     <div class="game-info">
@@ -385,10 +498,13 @@
       </div>
 
       <div id="nextDisplay">
+
         NEXT
+
         <div id="nextFruit">
           🍒
         </div>
+
       </div>
 
     </div>
@@ -411,7 +527,7 @@
       </div>
 
 
-      <!-- ゲームオーバー -->
+      <!-- GAME OVER -->
 
       <div id="gameOverScreen">
 
@@ -420,6 +536,8 @@
         <div id="finalScore">
           SCORE：0
         </div>
+
+        <div id="saveMessage"></div>
 
         <button id="restartButton">
           もう一度遊ぶ
@@ -456,8 +574,25 @@
 
 
     <div id="message">
-      左右に動かして落とそう！
+      名前を入力してから遊んでください
     </div>
+
+
+    <!-- ランキング -->
+
+    <section class="ranking">
+
+      <h2>🏆 TOP 10</h2>
+
+      <ul id="rankingList">
+
+        <li>
+          ランキング読み込み中...
+        </li>
+
+      </ul>
+
+    </section>
 
 
     <a class="back" href="index.html">
@@ -467,14 +602,35 @@
   </main>
 
 
+  <!-- Supabase -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
   <!-- Matter.js -->
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js">
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
 
 
   <script>
+
+    // ========================================
+    // Supabase
+    // ========================================
+
+    const SUPABASE_URL =
+      "https://vyvbgeqcnrouwpmjwzph.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_CEACy8FVXvk1IVVh5QtSCA_jiNLwHTT";
+
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
 
     // ========================================
     // Matter.js
@@ -516,74 +672,88 @@
     const scoreDisplay =
       document.getElementById("scoreDisplay");
 
+    const playerNameInput =
+      document.getElementById("playerName");
+
     const gameOverScreen =
       document.getElementById("gameOverScreen");
 
     const finalScore =
       document.getElementById("finalScore");
 
+    const saveMessage =
+      document.getElementById("saveMessage");
+
     const restartButton =
       document.getElementById("restartButton");
+
+    const rankingList =
+      document.getElementById("rankingList");
+
+    const message =
+      document.getElementById("message");
 
 
     // ========================================
     // フルーツ
+    //
+    // 前回から約1.2倍
     // ========================================
 
     const fruits = [
 
       {
         emoji: "🍒",
-        radius: 20,
+        radius: 24,
         color: "#ffd6dc",
         score: 0
       },
 
       {
         emoji: "🍓",
-        radius: 25,
+        radius: 30,
         color: "#ffb6c1",
         score: 10
       },
 
       {
         emoji: "🍊",
-        radius: 31,
+        radius: 37,
         color: "#ffd59a",
         score: 30
       },
 
       {
         emoji: "🍎",
-        radius: 37,
+        radius: 44,
         color: "#ffaaaa",
         score: 60
       },
 
       {
         emoji: "🍉",
-        radius: 44,
+        radius: 53,
         color: "#b8e6b8",
         score: 100
       },
 
       {
         emoji: "🍑",
-        radius: 51,
+        radius: 61,
         color: "#ffd0c2",
         score: 150
       },
 
       {
         emoji: "🍍",
-        radius: 59,
+        radius: 71,
         color: "#ffe48a",
         score: 220
       },
 
       {
         emoji: "🥥",
-        radius: 68,
+        radius: 82,
         color: "#d7c0a5",
         score: 300
       }
@@ -592,7 +762,7 @@
 
 
     // ========================================
-    // ゲームサイズ
+    // サイズ
     // ========================================
 
     const gameWidth =
@@ -603,16 +773,22 @@
 
 
     // ========================================
-    // ゲーム設定
+    // ゲーム状態
     // ========================================
 
     const dangerLineY =
-      105;
+      120;
 
     let score =
       0;
 
     let gameOver =
+      false;
+
+    let gameStarted =
+      false;
+
+    let scoreSaved =
       false;
 
     let canDrop =
@@ -621,12 +797,14 @@
     let fruitX =
       gameWidth / 2;
 
+    let currentPlayerName =
+      "";
+
 
     // ========================================
-    // ランダムフルーツ
+    // ランダム
     //
-    // 最初から巨大フルーツは出さない
-    // 🍒 🍓 🍊 の3種類
+    // 🍒 🍓 🍊
     // ========================================
 
     function randomFruitType() {
@@ -697,7 +875,7 @@
 
 
     // ========================================
-    // 壁・床
+    // 壁
     // ========================================
 
     function createWalls() {
@@ -710,11 +888,8 @@
         Bodies.rectangle(
 
           gameWidth / 2,
-
           gameHeight + 20,
-
           gameWidth,
-
           thickness,
 
           {
@@ -732,11 +907,8 @@
         Bodies.rectangle(
 
           -20,
-
           gameHeight / 2,
-
           thickness,
-
           gameHeight,
 
           {
@@ -754,11 +926,8 @@
         Bodies.rectangle(
 
           gameWidth + 20,
-
           gameHeight / 2,
-
           thickness,
-
           gameHeight,
 
           {
@@ -791,6 +960,54 @@
 
 
     // ========================================
+    // ゲーム開始確認
+    // ========================================
+
+    function prepareGameStart() {
+
+      if (gameStarted) {
+        return true;
+      }
+
+
+      const name =
+        playerNameInput.value.trim();
+
+
+      if (name === "") {
+
+        message.textContent =
+          "名前を入力してください！";
+
+        playerNameInput.focus();
+
+        return false;
+
+      }
+
+
+      currentPlayerName =
+        name;
+
+
+      gameStarted =
+        true;
+
+
+      playerNameInput.disabled =
+        true;
+
+
+      message.textContent =
+        "ゲームスタート！";
+
+
+      return true;
+
+    }
+
+
+    // ========================================
     // スコア
     // ========================================
 
@@ -799,6 +1016,7 @@
       score +=
         fruits[type].score;
 
+
       scoreDisplay.textContent =
         "SCORE：" + score;
 
@@ -806,7 +1024,7 @@
 
 
     // ========================================
-    // 物理フルーツ作成
+    // フルーツ作成
     // ========================================
 
     function createPhysicsFruit(
@@ -871,16 +1089,16 @@
         null;
 
 
-      // ========================================
-      // 絵文字
-      // ========================================
-
       const element =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
+
 
       element.classList.add(
         "physics-fruit"
       );
+
 
       element.textContent =
         data.emoji;
@@ -893,8 +1111,10 @@
       element.style.width =
         diameter + "px";
 
+
       element.style.height =
         diameter + "px";
+
 
       element.style.fontSize =
         (
@@ -923,7 +1143,7 @@
 
 
     // ========================================
-    // HTMLと物理Bodyを同期
+    // 絵文字同期
     // ========================================
 
     function updateFruitElements() {
@@ -985,23 +1205,27 @@
 
 
     // ========================================
-    // NEXT表示
+    // NEXT
     // ========================================
 
     function updateNextDisplay() {
 
+      const data =
+        fruits[nextFruitType];
+
+
       nextFruit.textContent =
-        fruits[nextFruitType].emoji;
+        data.emoji;
 
 
       nextFruit.style.backgroundColor =
-        fruits[nextFruitType].color;
+        data.color;
 
     }
 
 
     // ========================================
-    // 現在のフルーツ表示
+    // 現在のフルーツ
     // ========================================
 
     function updateCurrentFruit() {
@@ -1075,7 +1299,7 @@
 
 
     // ========================================
-    // スムーズ左右移動
+    // 左右移動
     // ========================================
 
     let moveDirection =
@@ -1132,9 +1356,7 @@
     );
 
 
-    function startMove(
-      direction
-    ) {
+    function startMove(direction) {
 
       if (
         gameOver ||
@@ -1176,14 +1398,28 @@
       }
 
 
+      // 名前がなければ開始しない
+
+      if (
+        !prepareGameStart()
+      ) {
+
+        return;
+
+      }
+
+
       canDrop =
         false;
+
 
       moveDirection =
         0;
 
+
       dropButton.disabled =
         true;
+
 
       currentFruit.style.display =
         "none";
@@ -1203,10 +1439,6 @@
 
       );
 
-
-      // ========================================
-      // NEXTを現在のフルーツへ
-      // ========================================
 
       setTimeout(
 
@@ -1282,8 +1514,6 @@
               pair.bodyB;
 
 
-            // フルーツ同士か確認
-
             if (
               bodyA.fruitType === undefined ||
               bodyB.fruitType === undefined
@@ -1293,8 +1523,6 @@
 
             }
 
-
-            // 同じ種類か
 
             if (
               bodyA.fruitType !==
@@ -1306,7 +1534,7 @@
             }
 
 
-            // 最終フルーツは合体しない
+            // 🥥は最終
 
             if (
               bodyA.fruitType >=
@@ -1317,8 +1545,6 @@
 
             }
 
-
-            // 二重合体防止
 
             if (
               bodyA.merging ||
@@ -1355,18 +1581,14 @@
               ) / 2;
 
 
-            // ========================================
             // スコア
-            // ========================================
 
             addScore(
               newType
             );
 
 
-            // ========================================
-            // 古いHTML削除
-            // ========================================
+            // HTML削除
 
             if (
               bodyA.fruitElement
@@ -1386,9 +1608,7 @@
             }
 
 
-            // ========================================
-            // 古いBody削除
-            // ========================================
+            // Body削除
 
             Composite.remove(
               engine.world,
@@ -1402,9 +1622,7 @@
             );
 
 
-            // ========================================
-            // 新しいフルーツ
-            // ========================================
+            // 新フルーツ
 
             createPhysicsFruit(
 
@@ -1424,12 +1642,15 @@
 
 
     // ========================================
-    // ゲームオーバー判定
+    // GAME OVER判定
     // ========================================
 
     function checkGameOver() {
 
-      if (gameOver) {
+      if (
+        gameOver ||
+        !gameStarted
+      ) {
 
         return;
 
@@ -1465,21 +1686,10 @@
           ].radius;
 
 
-        // ========================================
-        // フルーツ上端がラインより上
-        // ========================================
-
         const fruitTop =
           body.position.y -
           radius;
 
-
-        // ========================================
-        // ほぼ止まっているか
-        //
-        // 落下途中でゲームオーバーに
-        // ならないようにする
-        // ========================================
 
         const almostStopped =
           Math.abs(
@@ -1503,10 +1713,6 @@
 
           }
 
-
-          // ========================================
-          // 2秒以上ライン超え
-          // ========================================
 
           if (
             now -
@@ -1533,24 +1739,19 @@
 
 
     setInterval(
-
       checkGameOver,
-
       100
-
     );
 
 
     // ========================================
-    // ゲームオーバー
+    // GAME OVER
     // ========================================
 
-    function endGame() {
+    async function endGame() {
 
       if (gameOver) {
-
         return;
-
       }
 
 
@@ -1590,6 +1791,278 @@
       gameOverScreen.style.display =
         "flex";
 
+
+      // スコア保存
+
+      await saveScore();
+
+    }
+
+
+    // ========================================
+    // Supabaseへ保存
+    // ========================================
+
+    async function saveScore() {
+
+      if (scoreSaved) {
+        return;
+      }
+
+
+      scoreSaved =
+        true;
+
+
+      saveMessage.textContent =
+        "スコア保存中...";
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+
+          .from("game03_scores")
+
+          .insert({
+
+            player_name:
+              currentPlayerName,
+
+            score:
+              score
+
+          });
+
+
+      if (error) {
+
+        console.error(
+          error
+        );
+
+
+        saveMessage.textContent =
+          "スコアの保存に失敗しました";
+
+        return;
+
+      }
+
+
+      saveMessage.textContent =
+        "スコアを保存しました！";
+
+
+      await loadRanking();
+
+    }
+
+
+    // ========================================
+    // ランキング取得
+    // ========================================
+
+    async function loadRanking() {
+
+      rankingList.innerHTML =
+        "<li>ランキング読み込み中...</li>";
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+
+          .from("game03_scores")
+
+          .select(
+            "player_name, score"
+          )
+
+          .order(
+            "score",
+            {
+              ascending: false
+            }
+          )
+
+          .limit(10);
+
+
+      if (error) {
+
+        console.error(
+          error
+        );
+
+
+        rankingList.innerHTML =
+          "<li>ランキングを読み込めませんでした</li>";
+
+        return;
+
+      }
+
+
+      rankingList.innerHTML =
+        "";
+
+
+      if (
+        !data ||
+        data.length === 0
+      ) {
+
+        rankingList.innerHTML =
+          "<li>まだスコアがありません</li>";
+
+        return;
+
+      }
+
+
+      data.forEach(
+
+        function(record, index) {
+
+          const li =
+            document.createElement(
+              "li"
+            );
+
+
+          li.classList.add(
+            "ranking-row"
+          );
+
+
+          // TOP3の背景
+
+          if (index === 0) {
+
+            li.classList.add(
+              "rank1"
+            );
+
+          } else if (
+            index === 1
+          ) {
+
+            li.classList.add(
+              "rank2"
+            );
+
+          } else if (
+            index === 2
+          ) {
+
+            li.classList.add(
+              "rank3"
+            );
+
+          }
+
+
+          // 順位
+
+          const position =
+            document.createElement(
+              "span"
+            );
+
+
+          position.classList.add(
+            "ranking-position"
+          );
+
+
+          if (index === 0) {
+
+            position.textContent =
+              "🥇 1";
+
+          } else if (
+            index === 1
+          ) {
+
+            position.textContent =
+              "🥈 2";
+
+          } else if (
+            index === 2
+          ) {
+
+            position.textContent =
+              "🥉 3";
+
+          } else {
+
+            position.textContent =
+              (index + 1) + "位";
+
+          }
+
+
+          // 名前
+
+          const name =
+            document.createElement(
+              "span"
+            );
+
+
+          name.classList.add(
+            "ranking-name"
+          );
+
+
+          name.textContent =
+            record.player_name;
+
+
+          // スコア
+
+          const scoreElement =
+            document.createElement(
+              "span"
+            );
+
+
+          scoreElement.classList.add(
+            "ranking-score"
+          );
+
+
+          scoreElement.textContent =
+            record.score + "点";
+
+
+          li.appendChild(
+            position
+          );
+
+
+          li.appendChild(
+            name
+          );
+
+
+          li.appendChild(
+            scoreElement
+          );
+
+
+          rankingList.appendChild(
+            li
+          );
+
+        }
+
+      );
+
     }
 
 
@@ -1611,7 +2084,7 @@
 
 
     // ========================================
-    // ボタン操作
+    // 左右ボタン
     // ========================================
 
     leftButton.addEventListener(
@@ -1645,29 +2118,20 @@
 
 
     window.addEventListener(
-
       "pointerup",
-
       stopMove
-
     );
 
 
     window.addEventListener(
-
       "pointercancel",
-
       stopMove
-
     );
 
 
     dropButton.addEventListener(
-
       "click",
-
       dropFruit
-
     );
 
 
@@ -1748,12 +2212,16 @@
 
 
     window.addEventListener(
-
       "blur",
-
       stopMove
-
     );
+
+
+    // ========================================
+    // 最初にランキング取得
+    // ========================================
+
+    loadRanking();
 
   </script>
 

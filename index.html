@@ -32,39 +32,77 @@
       margin-bottom: 40px;
     }
 
+    /* ==============================
+       ゲーム一覧
+       ============================== */
+
     .games {
       display: flex;
       gap: 20px;
     }
 
-    .games a {
+    .game-card {
       flex: 1;
+      min-width: 0;
+    }
+
+    .game-card a {
       display: block;
     }
 
-    .games img {
+    .game-card img {
       width: 100%;
       height: auto;
       display: block;
     }
 
     /* マウスを乗せたとき少し薄くする */
-    .games a:hover img {
+    .game-card a:hover img {
       opacity: 0.8;
     }
 
-    /* スマホ用 */
+    /* ==============================
+       1位表示
+       ============================== */
+
+    .top-score {
+      margin-top: 10px;
+      padding: 10px;
+
+      text-align: center;
+
+      background: #fff8d6;
+
+      border: 1px solid #e5d48b;
+      border-radius: 6px;
+
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .top-score .player {
+      margin-right: 8px;
+    }
+
+    /* ==============================
+       スマホ
+       ============================== */
+
     @media (max-width: 600px) {
+
       .games {
         flex-direction: column;
       }
 
-      .games a {
+      .game-card {
         width: 100%;
+        margin-bottom: 20px;
       }
+
     }
   </style>
 </head>
+
 
 <body>
 
@@ -76,25 +114,238 @@
       自作ゲームを公開しています。
     </p>
 
+
     <div class="games">
 
-      <a href="game01.html">
-        <img src="game01.JPG" alt="Game 01">
-      </a>
 
-      <a href="game02.html">
-        <img src="game02.JPG" alt="Game 02">
-      </a>
+      <!-- ==========================
+           GAME 01
+           ========================== -->
 
-      <a href="game03.html">
-        <img src="game03.JPG" alt="Game 03">
-      </a>
+      <div class="game-card">
+
+        <a href="game01.html">
+
+          <img
+            src="game01.JPG"
+            alt="Game 01"
+          >
+
+        </a>
+
+        <div
+          class="top-score"
+          id="game01Top"
+        >
+          🥇 読み込み中...
+        </div>
+
+      </div>
+
+
+      <!-- ==========================
+           GAME 02
+           ========================== -->
+
+      <div class="game-card">
+
+        <a href="game02.html">
+
+          <img
+            src="game02.JPG"
+            alt="Game 02"
+          >
+
+        </a>
+
+        <div
+          class="top-score"
+          id="game02Top"
+        >
+          🥇 読み込み中...
+        </div>
+
+      </div>
+
+
+      <!-- ==========================
+           GAME 03
+           ========================== -->
+
+      <div class="game-card">
+
+        <a href="game03.html">
+
+          <img
+            src="game03.JPG"
+            alt="Game 03"
+          >
+
+        </a>
+
+        <div
+          class="top-score"
+          id="game03Top"
+        >
+          🥇 読み込み中...
+        </div>
+
+      </div>
+
 
     </div>
 
   </main>
 
+
+  <!-- Supabase -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+  <script>
+
+    // ========================================
+    // Supabase
+    // ========================================
+
+    const SUPABASE_URL =
+      "https://vyvbgeqcnrouwpmjwzph.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_CEACy8FVXvk1IVVh5QtSCA_jiNLwHTT";
+
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    // ========================================
+    // 各ゲームの1位を取得
+    // ========================================
+
+    async function loadTopScore(
+      tableName,
+      elementId
+    ) {
+
+      const element =
+        document.getElementById(
+          elementId
+        );
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+
+          .from(tableName)
+
+          .select(
+            "player_name, score"
+          )
+
+          .order(
+            "score",
+            {
+              ascending: false
+            }
+          )
+
+          .limit(1);
+
+
+      // ======================================
+      // エラー
+      // ======================================
+
+      if (error) {
+
+        console.error(
+          tableName,
+          error
+        );
+
+
+        element.textContent =
+          "ランキング取得エラー";
+
+
+        return;
+
+      }
+
+
+      // ======================================
+      // まだスコアがない
+      // ======================================
+
+      if (
+        !data ||
+        data.length === 0
+      ) {
+
+        element.textContent =
+          "🥇 まだスコアなし";
+
+
+        return;
+
+      }
+
+
+      // ======================================
+      // 1位
+      // ======================================
+
+      const top =
+        data[0];
+
+
+      /*
+        textContentを使っているので、
+        プレイヤー名にHTMLが入力されても
+        HTMLとして実行されません。
+      */
+
+      element.textContent =
+        "🥇 " +
+        top.player_name +
+        "　" +
+        top.score +
+        "点";
+
+    }
+
+
+    // ========================================
+    // 3ゲーム読み込み
+    // ========================================
+
+    loadTopScore(
+      "game01_scores",
+      "game01Top"
+    );
+
+
+    loadTopScore(
+      "game02_scores",
+      "game02Top"
+    );
+
+
+    loadTopScore(
+      "game03_scores",
+      "game03Top"
+    );
+
+  </script>
+
 </body>
 
 </html>
-```
